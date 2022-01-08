@@ -24,7 +24,8 @@ namespace TentaPApi
             services
                 .AddDbContext<ApplicationDbContext>(options => options.UseNpgsql(ConnectionStringHelper.GetConnectionStringFromUrl(EnvironmentHelper.GetEnvironmentVariable("DATABASE_URL"))))
                 .AddGraphQLServer()
-                .AddQueryType<Query>();
+                .AddQueryType<Query>()
+                .AddMutationType<Mutation>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

@@ -11,6 +11,6 @@ namespace TentaPApi.Data
         public int Id { get; set; }
 
         [Required]
-        public byte[] Base64 { get; set; }
+        public byte[] Data { get; set; }
     }
 }

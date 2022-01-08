@@ -9,6 +9,8 @@ namespace TentaPApi.Data
     {
         public int Id { get; set; }
         public string Name { get; set; }
-        public List<Tag> Tags { get; set; }
+        public virtual List<Tag> Tags { get; set; }
+
+        public Module() { }
     }
 }

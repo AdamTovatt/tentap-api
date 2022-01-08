@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Threading.Tasks;
+using TentaPApi.Queries;
 
 namespace TentaPApi.Data
 {
@@ -13,7 +15,6 @@ namespace TentaPApi.Data
         [Required]
         public string Name { get; set; }
 
-        [Required]
-        public List<Module> Modules { get; set; }
+        public virtual List<Module> Modules { get; set; }
     }
 }

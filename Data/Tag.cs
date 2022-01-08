@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -9,6 +10,9 @@ namespace TentaPApi.Data
     {
         public int Id { get; set; }
         public string Name { get; set; }
-        public List<Exercise> Exercises { get; set; }
+        public virtual List<Exercise> Exercises { get; set; }
+
+        [NotMapped]
+        public int ExerciseCount { get { return Exercises.Count(); } }
     }
 }
