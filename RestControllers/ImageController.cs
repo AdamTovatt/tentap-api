@@ -8,7 +8,7 @@ using TentaPApi.Managers;
 
 namespace TentaPApi.RestControllers
 {
-    [Route("api/[controller]")]
+    [Route("resource/[controller]")]
     [ApiController]
     public class ImageController : ControllerBase
     {

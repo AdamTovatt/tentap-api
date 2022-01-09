@@ -16,7 +16,7 @@
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
         "DATABASE_URL": "url",
-        "IMAGE_URL_BASE": "https://localhost:5001/api/image?id={0}"
+        "IMAGE_URL_BASE": "https://localhost:5001/resource/image?id={0}"
       }
     }
   }
