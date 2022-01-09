@@ -16,5 +16,8 @@ namespace TentaPApi.Data
         public string Name { get; set; }
 
         public virtual List<Module> Modules { get; set; }
+
+        [NotMapped]
+        public string DebugInfo { get; set; }
     }
 }

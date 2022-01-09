@@ -13,6 +13,15 @@ namespace TentaPApi.Data
         public virtual List<Exercise> Exercises { get; set; }
 
         [NotMapped]
-        public int ExerciseCount { get { return Exercises.Count(); } }
+        public int ExerciseCount { get { if (_exerciseCount != null) return (int)_exerciseCount; return Exercises.Count(); } }
+
+        private int? _exerciseCount;
+
+        public Tag() { }
+
+        public Tag(long exerciseCount)
+        {
+            _exerciseCount = (int)exerciseCount;
+        }
     }
 }
