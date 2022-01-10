@@ -23,7 +23,7 @@ namespace TentaPApi.Queries
             string method = "";
             Course result;
 
-            if (DateTime.UtcNow.Millisecond % 2 == 0)
+            if (DateTime.UtcNow.Millisecond % 2 == 0 || true) //always use ORM for now but I want to keep this code to compare later
             {
                 method = "ORM";
                 Stopwatch stopwatch = Stopwatch.StartNew();
