@@ -16,7 +16,12 @@
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
         "DATABASE_URL": "url",
-        "IMAGE_URL_BASE": "https://localhost:5001/resource/image?id={0}"
+        "IMAGE_URL_BASE": "https://localhost:5001/resource/image?id={0}",
+        "CLOUDINARY_CLOUD": "tentap",
+        "CLOUDINARY_KEY": "key",
+        "CLOUDINARY_SECRET": "secret",
+        "EXERCISE_IMAGE_URL_BASE": "https://res.cloudinary.com/tentap/image/upload",
+        "SOLUTION_IMAGE_URL_BASE": "https://res.cloudinary.com/tentap/image/upload"
       }
     }
   }

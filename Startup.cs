@@ -34,8 +34,7 @@ namespace TentaPApi
             services
                 .AddDbContext<ApplicationDbContext>(options => options.UseNpgsql(ConnectionStringHelper.GetConnectionStringFromUrl(EnvironmentHelper.GetEnvironmentVariable("DATABASE_URL"))))
                 .AddGraphQLServer()
-                .AddQueryType<Query>()
-                .AddMutationType<Mutation>();
+                .AddQueryType<Query>();
 
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(options =>

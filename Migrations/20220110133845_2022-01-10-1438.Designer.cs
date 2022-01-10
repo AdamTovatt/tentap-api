@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using TentaPApi.Data;
@@ -9,9 +10,10 @@ using TentaPApi.Data;
 namespace TentaPApi.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20220110133845_2022-01-10-1438")]
+    partial class _202201101438
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -42,9 +44,6 @@ namespace TentaPApi.Migrations
                         .HasColumnType("integer")
                         .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
-                    b.Property<string>("ExerciseImageId")
-                        .HasColumnType("text");
-
                     b.Property<string>("ExerciseImageUrl")
                         .HasColumnType("text");
 
@@ -53,9 +52,6 @@ namespace TentaPApi.Migrations
 
                     b.Property<float>("Score")
                         .HasColumnType("real");
-
-                    b.Property<string>("SolutionImageId")
-                        .HasColumnType("text");
 
                     b.Property<string>("SolutionImageUrl")
                         .HasColumnType("text");

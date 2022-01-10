@@ -18,26 +18,6 @@ namespace TentaPApi.Managers
             ConnectionString = ConnectionStringHelper.GetConnectionStringFromUrl(EnvironmentHelper.GetEnvironmentVariable("DATABASE_URL"));
         }
 
-        public async Task<ExerciseImage> GetImage(int id)
-        {
-            string query = @"SELECT ""Data"" FROM ""ExerciseImage"" WHERE ""Id"" = @id";
-
-            using (NpgsqlConnection connection = new NpgsqlConnection(ConnectionString))
-            using (NpgsqlCommand command = new NpgsqlCommand(query, connection))
-            {
-                await connection.OpenAsync();
-
-                command.Parameters.Add("@id", NpgsqlTypes.NpgsqlDbType.Integer).Value = id;
-
-                object data = await command.ExecuteScalarAsync();
-
-                if (data.GetType() == typeof(DBNull))
-                    return null;
-                else
-                    return new ExerciseImage() { Id = id, Data = (byte[])data };
-            }
-        }
-
         public async Task<Course> GetCourse(int id)
         {
             string query = @"SELECT

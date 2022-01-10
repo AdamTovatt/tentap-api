@@ -27,7 +27,14 @@ namespace TentaPApi.Queries
             {
                 method = "ORM";
                 Stopwatch stopwatch = Stopwatch.StartNew();
-                result = database.Course.Where(x => x.Id == courseId).Include(x => x.Modules).ThenInclude(x => x.Tags).ThenInclude(x => x.Exercises).ToList().First();
+                result = database.Course
+                    .Where(x => x.Id == courseId)
+                    .Include(x => x.Modules)
+                    .ThenInclude(x => x.Tags)
+                    .ThenInclude(x => x.Exercises)
+                    .ThenInclude(x => x.Source)
+                    .ToList().First();
+
                 stopwatch.Stop();
                 time += (int)stopwatch.ElapsedMilliseconds;
             }
@@ -46,7 +53,7 @@ namespace TentaPApi.Queries
 
         public IQueryable<Exercise> GetExercise([Service] ApplicationDbContext database, int exerciseId)
         {
-            return database.Exercise.Where(x => x.Id == exerciseId).Include(x => x.Image).Include(x => x.SolutionImage).Include(x => x.Source);
+            return database.Exercise.Where(x => x.Id == exerciseId).Include(x => x.Source);
         }
     }
 }
