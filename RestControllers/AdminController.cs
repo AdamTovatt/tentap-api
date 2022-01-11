@@ -67,6 +67,8 @@ namespace TentaPApi.RestControllers
                 mode = "create";
             }
 
+            exercise.Number = body.Number;
+
             await _context.SaveChangesAsync();
 
             Cloudinary cloudinary = CloudinaryHelper.GetCloudinary();
