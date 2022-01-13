@@ -17,6 +17,11 @@ namespace TentaPApi.Queries
             return database.Course.Include(x => x.Modules);
         }
 
+        public IQueryable<Source> GetSources([Service] ApplicationDbContext database)
+        {
+            return database.Source;
+        }
+
         public async Task<Course> GetCourse([Service] ApplicationDbContext database, int courseId)
         {
             int time = 0;

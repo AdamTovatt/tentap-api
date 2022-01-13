@@ -27,6 +27,44 @@ namespace TentaPApi.RestControllers
             _context = context;
         }
 
+        [HttpPost("module/create")]
+        public async Task<IActionResult> CreateModule([FromBody] CreateModuleBody body)
+        {
+            if (!body.Valid)
+                return new ApiResponse("Missing in body: " + body.GetMissingProperties(), System.Net.HttpStatusCode.BadRequest);
+
+            Course course = _context.Course.Where(x => x.Id == body.CourseId).SingleOrDefault();
+
+            if (course == null)
+                return new ApiResponse("No such course: " + body.CourseId, System.Net.HttpStatusCode.BadRequest);
+
+            Module module = new Module() { Name = body.ModuleName, Tags = new List<Tag>() };
+            course.Modules.Add(module);
+            await _context.SaveChangesAsync();
+
+            return new ApiResponse(module.Id);
+        }
+
+        [HttpPost("tag/create")]
+        public async Task<IActionResult> CreateTag([FromBody] CreateTagBody body)
+        {
+            if (!body.Valid)
+                return new ApiResponse("Missing in body: " + body.GetMissingProperties(), System.Net.HttpStatusCode.BadRequest);
+
+            Module module = _context.Module.Where(x => x.Id == body.ModuleId).SingleOrDefault();
+
+            if (module == null)
+                return new ApiResponse("No such module: " + body.ModuleId, System.Net.HttpStatusCode.BadRequest);
+
+            _context.Attach(module);
+
+            Tag tag = new Tag() { Name = body.TagName, Exercises = new List<Exercise>() };
+            module.Tags.Add(tag);
+            await _context.SaveChangesAsync();
+
+            return new ApiResponse(tag.Id);
+        }
+
         [HttpPost("exercise/upload")]
         public async Task<IActionResult> Upload([FromBody] ExerciseUploadBody body)
         {
