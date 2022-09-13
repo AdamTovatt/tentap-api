@@ -8,14 +8,12 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpOverrides;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using TentaPApi.Data;
 using TentaPApi.Helpers;
-using TentaPApi.Queries;
 using WebApiUtilities.Helpers;
 
 namespace TentaPApi
@@ -31,11 +29,6 @@ namespace TentaPApi
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services
-                .AddDbContext<ApplicationDbContext>(options => options.UseNpgsql(ConnectionStringHelper.GetConnectionStringFromUrl(EnvironmentHelper.GetEnvironmentVariable("DATABASE_URL"))))
-                .AddGraphQLServer()
-                .AddQueryType<Query>();
-
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(options =>
             {
@@ -53,7 +46,6 @@ namespace TentaPApi
 
             services.AddCors();
             services.AddControllers();
-
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -85,7 +77,6 @@ namespace TentaPApi
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
-                endpoints.MapGraphQL();
             });
         }
     }
