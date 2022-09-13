@@ -66,7 +66,7 @@ namespace TentaPApi.RestControllers
         }
 
         [HttpPost("exercise/upload")]
-        public async Task<IActionResult> Upload([FromBody] ExerciseUploadBody body)
+        public async Task<IActionResult> Upload([FromBody] UploadExerciseBody body)
         {
             string mode = "none";
 

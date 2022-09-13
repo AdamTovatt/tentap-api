@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -10,14 +11,18 @@ namespace TentaPApi.Data
 {
     public class Course
     {
+        [JsonProperty("id")]
         public int Id { get; set; }
 
-        [Required]
+        [JsonProperty("name")]
         public string Name { get; set; }
 
-        public virtual List<Module> Modules { get; set; }
+        public Course() { }
 
-        [NotMapped]
-        public string DebugInfo { get; set; }
+        public Course(int id, string name)
+        {
+            Id = id;
+            Name = name;
+        }
     }
 }
