@@ -20,6 +20,7 @@ namespace TentaPApi.RestControllers
     [ApiController]
     public class AdminController : ControllerBase
     {
+        /*
         [HttpPost("module/create")]
         public async Task<IActionResult> CreateModule([FromBody] CreateModuleBody body)
         {
@@ -37,27 +38,15 @@ namespace TentaPApi.RestControllers
 
             return new ApiResponse(module.Id);
         }
+        */
 
-        [HttpPost("tag/create")]
-        public async Task<IActionResult> CreateTag([FromBody] CreateTagBody body)
+        [HttpPost("course/create")]
+        public async Task<IActionResult> CreateCourse([FromBody] CreateCourseBody body)
         {
-            if (!body.Valid)
-                return new ApiResponse("Missing in body: " + body.GetMissingProperties(), System.Net.HttpStatusCode.BadRequest);
-
-            Module module = _context.Module.Where(x => x.Id == body.ModuleId).SingleOrDefault();
-
-            if (module == null)
-                return new ApiResponse("No such module: " + body.ModuleId, System.Net.HttpStatusCode.BadRequest);
-
-            _context.Attach(module);
-
-            Tag tag = new Tag() { Name = body.TagName, Exercises = new List<Exercise>() };
-            module.Tags.Add(tag);
-            await _context.SaveChangesAsync();
-
-            return new ApiResponse(tag.Id);
+            return new ApiResponse();
         }
 
+        /*
         [HttpPost("exercise/upload")]
         public async Task<IActionResult> Upload([FromBody] UploadExerciseBody body)
         {
@@ -122,7 +111,9 @@ namespace TentaPApi.RestControllers
 
             return new ApiResponse(new { id = exercise.Id, exerciseUrl = questionUploadResult.Url, solutionUrl = solutionUploadResult.Url, mode, deletionResults });
         }
+        */
 
+        /*
         [HttpDelete("exercise/remove")]
         public async Task<IActionResult> Remove(int id)
         {
@@ -138,5 +129,6 @@ namespace TentaPApi.RestControllers
 
             return new ApiResponse();
         }
+        */
     }
 }

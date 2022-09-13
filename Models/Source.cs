@@ -1,9 +1,10 @@
 ﻿using Newtonsoft.Json;
+using Npgsql;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-
+    
 namespace TentaPApi.Data
 {
     public class Source
@@ -19,5 +20,10 @@ namespace TentaPApi.Data
 
         [JsonProperty("date")]
         public DateTime Date { get; set; }
+
+        public static Source FromReader(NpgsqlDataReader reader)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

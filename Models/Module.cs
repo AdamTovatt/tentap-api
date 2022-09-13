@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Npgsql;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -16,6 +17,11 @@ namespace TentaPApi.Data
         {
             Id = id;
             Name = name;
+        }
+
+        public static Module FromReader(NpgsqlDataReader reader)
+        {
+            throw new NotImplementedException();
         }
     }
 }
