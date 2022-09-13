@@ -20,13 +20,6 @@ namespace TentaPApi.RestControllers
     [ApiController]
     public class AdminController : ControllerBase
     {
-        private readonly ApplicationDbContext _context;
-
-        public AdminController(ApplicationDbContext context)
-        {
-            _context = context;
-        }
-
         [HttpPost("module/create")]
         public async Task<IActionResult> CreateModule([FromBody] CreateModuleBody body)
         {

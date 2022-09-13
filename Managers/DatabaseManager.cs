@@ -22,24 +22,8 @@ namespace TentaPApi.Managers
         {
             string query = @"SELECT
                             c.""Id"" ""CourseId"",
-                            c.""Name"" ""CourseName"",
-                            m.""Id"" ""ModuleId"",
-                            m.""Name"" ""ModuleName"",
-                            t.""Id"" ""TagId"",
-                            t.""Name"" ""TagName"",
-                            COALESCE(q.""Exercises"", 0) as ""ExerciseCount""
-                            FROM ""Course"" c
-                            JOIN ""Module"" m on m.""CourseId"" = c.""Id""
-                            LEFT JOIN ""Tag"" t on t.""ModuleId"" = m.""Id""
-                            LEFT JOIN
-                            (SELECT
-
-                                ""TagId"",
-	                            COUNT(""Id"") ""Exercises""
-                            FROM ""Exercise""
-                            GROUP BY ""TagId"") q on q.""TagId"" = t.""Id""
-                            WHERE c.""Id"" = @id
-                            ORDER BY m.""Id"", t.""Id""";
+                            c.""Name"" ""CourseName""
+                            FROM ""Course""";
 
             Course result = null;
             Dictionary<int, Module> modules = new Dictionary<int, Module>();
