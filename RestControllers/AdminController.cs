@@ -6,9 +6,11 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using TentaPApi.Data;
 using TentaPApi.Helpers;
+using TentaPApi.Managers;
 using TentaPApi.RequestBodies;
 using WebApiUtilities.Helpers;
 
@@ -41,7 +43,22 @@ namespace TentaPApi.RestControllers
         [HttpPost("course/create")]
         public async Task<IActionResult> CreateCourse([FromBody] CreateCourseBody body)
         {
-            return new ApiResponse();
+            try
+            {
+                if (!body.Valid)
+                    return new ApiResponse(body.GetInvalidBodyMessage(), HttpStatusCode.BadRequest);
+
+                DatabaseManager database = new DatabaseManager();
+
+                Course course = new Course() { Code = body.Code, Name = body.Name };
+                course = await database.AddCourseAsync(course);
+
+                return new ApiResponse(course);
+            }
+            catch(ApiException exception)
+            {
+                return new ApiResponse(exception);
+            }
         }
 
         /*
