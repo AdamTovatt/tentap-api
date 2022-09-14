@@ -1,5 +1,6 @@
 ﻿using Npgsql;
 using NpgsqlTypes;
+using Sakur.WebApiUtilities.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -56,7 +57,7 @@ namespace TentaPApi.Managers
                 await connection.OpenAsync();
 
                 command.Parameters.Add("@name", NpgsqlDbType.Integer).Value = user.Name;
-                command.Parameters.Add("@email", NpgsqlDbType.Integer).Value = user.Email;
+                command.Parameters.Add("@email", NpgsqlDbType.Integer).Value = user.Email.ToLower();
                 command.Parameters.Add("@password", NpgsqlDbType.Integer).Value = user.Password;
 
                 user.Id = (int)await command.ExecuteScalarAsync();

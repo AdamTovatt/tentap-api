@@ -19,7 +19,8 @@
         "IMAGE_URL_BASE": "https://localhost:5001/resource/image?id={0}",
         "CLOUDINARY_CLOUD": "tentap",
         "CLOUDINARY_KEY": "key",
-        "CLOUDINARY_SECRET": "secret"
+        "CLOUDINARY_SECRET": "secret",
+        "JWT_KEY": "key"
       }
     }
   }
