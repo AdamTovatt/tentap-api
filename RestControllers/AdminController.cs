@@ -21,7 +21,7 @@ namespace TentaPApi.RestControllers
     [ApiController]
     public class AdminController : ControllerBase
     {
-        [Authorize]
+        [Authorize(Roles = "1,2")]
         [HttpPost("source/create")]
         public async Task<IActionResult> CreateSource([FromBody] CreateSourceBody body)
         {
@@ -30,7 +30,7 @@ namespace TentaPApi.RestControllers
                 if (!body.Valid)
                     return new ApiResponse(body.GetInvalidBodyMessage(), HttpStatusCode.BadRequest);
 
-                DatabaseManager database = new DatabaseManager();
+                DatabaseManager database = new DatabaseManager(UserHelper.GetClaims(User).GetUserId());
 
                 return new ApiResponse(await database.AddSourceAsync(body.GetSource()));
             }
@@ -40,6 +40,7 @@ namespace TentaPApi.RestControllers
             }
         }
 
+        [Authorize(Roles = "1,2")]
         [HttpPost("module/create")]
         public async Task<IActionResult> CreateModule([FromBody] CreateModuleBody body)
         {
@@ -48,7 +49,7 @@ namespace TentaPApi.RestControllers
                 if (!body.Valid)
                     return new ApiResponse(body.GetInvalidBodyMessage(), HttpStatusCode.BadRequest);
 
-                DatabaseManager database = new DatabaseManager();
+                DatabaseManager database = new DatabaseManager(UserHelper.GetClaims(User).GetUserId());
 
                 Course course = new Course() { Id = body.CourseId };
                 Module module = new Module() { Name = body.ModuleName, Course = course };
@@ -63,6 +64,7 @@ namespace TentaPApi.RestControllers
             }
         }
 
+        [Authorize(Roles = "1,2")]
         [HttpPost("course/create")]
         public async Task<IActionResult> CreateCourse([FromBody] CreateCourseBody body)
         {
@@ -71,7 +73,7 @@ namespace TentaPApi.RestControllers
                 if (!body.Valid)
                     return new ApiResponse(body.GetInvalidBodyMessage(), HttpStatusCode.BadRequest);
 
-                DatabaseManager database = new DatabaseManager();
+                DatabaseManager database = new DatabaseManager(UserHelper.GetClaims(User).GetUserId());
 
                 Course course = new Course() { Code = body.Code, Name = body.Name };
                 course = await database.AddCourseAsync(course);
@@ -84,6 +86,7 @@ namespace TentaPApi.RestControllers
             }
         }
 
+        [Authorize(Roles = "1,2")]
         [HttpPost("exercise/create")]
         public async Task<IActionResult> Upload([FromBody] CreateExerciseBody body)
         {
@@ -92,7 +95,7 @@ namespace TentaPApi.RestControllers
                 if (!body.Valid)
                     return new ApiResponse(body.GetInvalidBodyMessage(), HttpStatusCode.BadRequest);
 
-                DatabaseManager database = new DatabaseManager();
+                DatabaseManager database = new DatabaseManager(UserHelper.GetClaims(User).GetUserId());
 
                 Source source = await database.GetSourceAsync(body.SourceId);
 
@@ -126,12 +129,13 @@ namespace TentaPApi.RestControllers
             }
         }
 
+        [Authorize(Roles = "1,2")]
         [HttpDelete("exercise/remove")]
         public async Task<IActionResult> Remove(int id)
         {
             try
             {
-                DatabaseManager database = new DatabaseManager();
+                DatabaseManager database = new DatabaseManager(UserHelper.GetClaims(User).GetUserId());
                 Exercise exercise = await database.GetExerciseByIdAsync(id);
 
                 if (exercise == null)

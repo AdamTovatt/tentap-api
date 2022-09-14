@@ -28,7 +28,8 @@ namespace TentaPApi.Helpers
             {
                 new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
                 new Claim(JwtRegisteredClaimNames.Email, user.Email),
-                new Claim(JwtRegisteredClaimNames.UniqueName, user.Email)
+                new Claim(JwtRegisteredClaimNames.UniqueName, user.Email),
+                new Claim(ClaimTypes.Role, user.Role)
             };
 
             JwtSecurityToken token = new JwtSecurityToken("sakur.se", "sakur.se", claims, expires: DateTime.Now.AddDays(14), signingCredentials: credentials);

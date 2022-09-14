@@ -15,8 +15,20 @@ namespace TentaPApi.Managers
     public class DatabaseManager
     {
         public string ConnectionString { get; private set; }
+        public int UserId { get; set; }
 
         public DatabaseManager()
+        {
+            LoadConnectionString();
+        }
+
+        public DatabaseManager(int userId)
+        {
+            LoadConnectionString();
+            UserId = userId;
+        }
+
+        private void LoadConnectionString()
         {
             ConnectionString = ConnectionStringHelper.GetConnectionStringFromUrl(EnvironmentHelper.GetEnvironmentVariable("DATABASE_URL"));
         }
@@ -25,7 +37,7 @@ namespace TentaPApi.Managers
         {
             User result = null;
 
-            const string query = "SELECT id, name, email, password, created_date FROM site_user WHERE email = @email";
+            const string query = "SELECT id, name, email, password, created_date, role FROM site_user WHERE email = @email";
 
             using (NpgsqlConnection connection = new NpgsqlConnection(ConnectionString))
             using (NpgsqlCommand command = new NpgsqlCommand(query, connection))
@@ -80,8 +92,8 @@ namespace TentaPApi.Managers
 
         public async Task<Exercise> AddExerciseAsync(Exercise exercise)
         {
-            const string query = @"INSERT INTO exercise (module_id, difficulty, source_id, problem_image, solution_image)
-                                    VALUES (@module_id, @difficulty, @source_id, @problem_image, @solution_image)
+            const string query = @"INSERT INTO exercise (module_id, difficulty, source_id, problem_image, solution_image, created_by)
+                                    VALUES (@module_id, @difficulty, @source_id, @problem_image, @solution_image, @created_by)
                                     RETURNING id";
 
             using (NpgsqlConnection connection = new NpgsqlConnection(ConnectionString))
@@ -94,6 +106,7 @@ namespace TentaPApi.Managers
                 command.Parameters.Add("@source_id", NpgsqlDbType.Integer).Value = exercise.Source.Id;
                 command.Parameters.Add("@problem_image", NpgsqlDbType.Varchar).Value = exercise.ProblemImage.Url;
                 command.Parameters.Add("@solution_image", NpgsqlDbType.Varchar).Value = exercise.SolutionImage.Url;
+                command.Parameters.Add("@created_by", NpgsqlDbType.Integer).Value = UserId;
 
                 exercise.Id = (int)await command.ExecuteScalarAsync();
 
@@ -103,7 +116,7 @@ namespace TentaPApi.Managers
 
         public async Task<Source> AddSourceAsync(Source source)
         {
-            const string query = "INSERT INTO source (course_id, author, date) VALUES (@courseId, @author, @date) RETURNING id";
+            const string query = "INSERT INTO source (course_id, author, source_date, created_by) VALUES (@courseId, @author, @date, @created_by) RETURNING id";
 
             using (NpgsqlConnection connection = new NpgsqlConnection(ConnectionString))
             using (NpgsqlCommand command = new NpgsqlCommand(query, connection))
@@ -113,6 +126,7 @@ namespace TentaPApi.Managers
                 command.Parameters.Add("@courseId", NpgsqlDbType.Integer).Value = source.Course.Id;
                 command.Parameters.Add("@author", NpgsqlDbType.Varchar).Value = source.Author;
                 command.Parameters.Add("@date", NpgsqlDbType.Date).Value = source.Date;
+                command.Parameters.Add("@created_by", NpgsqlDbType.Integer).Value = UserId;
 
                 source.Id = (int)await command.ExecuteScalarAsync();
 
@@ -122,7 +136,7 @@ namespace TentaPApi.Managers
 
         public async Task<Module> AddModuleAsync(Module module)
         {
-            const string query = "INSERT INTO course_module (name, courseId) VALUES (@name, @courseId) RETURNING id";
+            const string query = "INSERT INTO course_module (name, courseId, created_by) VALUES (@name, @courseId, @created_by) RETURNING id";
 
             using (NpgsqlConnection connection = new NpgsqlConnection(ConnectionString))
             using (NpgsqlCommand command = new NpgsqlCommand(query, connection))
@@ -131,6 +145,7 @@ namespace TentaPApi.Managers
 
                 command.Parameters.Add("@courseId", NpgsqlDbType.Integer).Value = module.Course.Id;
                 command.Parameters.Add("@name", NpgsqlDbType.Varchar).Value = module.Name;
+                command.Parameters.Add("@created_by", NpgsqlDbType.Integer).Value = UserId;
 
                 module.Id = (int)await command.ExecuteScalarAsync();
 
@@ -140,7 +155,7 @@ namespace TentaPApi.Managers
 
         public async Task<Course> AddCourseAsync(Course course)
         {
-            const string query = "INSERT INTO course (code, name) VALUES (@code, @name)";
+            const string query = "INSERT INTO course (code, name, created_by) VALUES (@code, @name, @created_by)";
 
             using (NpgsqlConnection connection = new NpgsqlConnection(ConnectionString))
             using (NpgsqlCommand command = new NpgsqlCommand(query, connection))
@@ -149,6 +164,7 @@ namespace TentaPApi.Managers
 
                 command.Parameters.Add("@code", NpgsqlDbType.Varchar).Value = course.Code;
                 command.Parameters.Add("@name", NpgsqlDbType.Varchar).Value = course.Name;
+                command.Parameters.Add("@created_by", NpgsqlDbType.Integer).Value = UserId;
 
                 course.Id = (int)await command.ExecuteScalarAsync();
 

@@ -20,6 +20,9 @@ namespace TentaPApi.Models
 
         [JsonProperty("createdDate")]
         public DateTime CreatedDate { get; set; }
+        
+        [JsonProperty("role")]
+        public string Role { get; set; }
 
         public User() { }
 
@@ -42,7 +45,7 @@ namespace TentaPApi.Models
 
         public static User FromReader(NpgsqlDataReader reader)
         {
-            return new User(reader["name"] as string, reader["email"] as string, reader["password"] as string, (DateTime)reader["created_date"], (int)reader["id"]);
+            return new User(reader["name"] as string, reader["email"] as string, reader["password"] as string, (DateTime)reader["created_date"], (int)reader["id"]) { Role = ((int)reader["role"]).ToString() };
         }
     }
 }
