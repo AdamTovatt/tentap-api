@@ -47,6 +47,9 @@ namespace TentaPApi.RestControllers
                 DatabaseManager database = new DatabaseManager();
                 User user = await database.GetUserByEmailAsync(userLoginInformation.Email);
 
+                if(user == null)
+                    return new ApiResponse("Invalid username and/or password", HttpStatusCode.Unauthorized);
+
                 UserLoginRequestBody authenticatedUser = UserHelper.AuthenticateUser(userLoginInformation, user);
 
                 if (authenticatedUser != null)
