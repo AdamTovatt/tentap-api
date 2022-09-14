@@ -97,7 +97,7 @@ namespace TentaPApi.Managers
             {
                 await connection.OpenAsync();
 
-                command.Parameters.Add("@courseId", NpgsqlDbType.Integer).Value = source.CourseId;
+                command.Parameters.Add("@courseId", NpgsqlDbType.Integer).Value = source.Course.Id;
                 command.Parameters.Add("@author", NpgsqlDbType.Varchar).Value = source.Author;
                 command.Parameters.Add("@date", NpgsqlDbType.Date).Value = source.Date;
 
@@ -187,6 +187,16 @@ namespace TentaPApi.Managers
             }
 
             return null;
+        }
+
+        public async Task<Source> GetSourceAsync(int id)
+        {
+            throw new NotImplementedException();
+        }
+
+        public async Task<Module> GetModuleAsync(int id)
+        {
+            throw new NotImplementedException();
         }
 
         public async Task<Exercise> GetExerciseAsync(int userId, Difficulty[] difficulties)

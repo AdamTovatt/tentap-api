@@ -15,8 +15,8 @@ namespace TentaPApi.Data
         [JsonProperty("author")]
         public string Author { get; set; }
 
-        [JsonProperty("courseId")]
-        public int CourseId { get; set; }
+        [JsonProperty("course")]
+        public Course Course { get; set; }
 
         [JsonProperty("date")]
         public DateTime Date { get; set; }

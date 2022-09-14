@@ -20,25 +20,46 @@ namespace TentaPApi.RestControllers
     [ApiController]
     public class AdminController : ControllerBase
     {
-        /*
+        [HttpPost("source/create")]
+        public async Task<IActionResult> CreateSource([FromBody] CreateSourceBody body)
+        {
+            try
+            {
+                if (!body.Valid)
+                    return new ApiResponse(body.GetInvalidBodyMessage(), HttpStatusCode.BadRequest);
+
+                DatabaseManager database = new DatabaseManager();
+
+                return new ApiResponse(await database.AddSourceAsync(body.GetSource()));
+            }
+            catch (ApiException exception)
+            {
+                return new ApiResponse(exception);
+            }
+        }
+
         [HttpPost("module/create")]
         public async Task<IActionResult> CreateModule([FromBody] CreateModuleBody body)
         {
-            if (!body.Valid)
-                return new ApiResponse("Missing in body: " + body.GetMissingProperties(), System.Net.HttpStatusCode.BadRequest);
+            try
+            {
+                if (!body.Valid)
+                    return new ApiResponse(body.GetInvalidBodyMessage(), HttpStatusCode.BadRequest);
 
-            Course course = _context.Course.Where(x => x.Id == body.CourseId).SingleOrDefault();
+                DatabaseManager database = new DatabaseManager();
 
-            if (course == null)
-                return new ApiResponse("No such course: " + body.CourseId, System.Net.HttpStatusCode.BadRequest);
+                Course course = new Course() { Id = body.CourseId };
+                Module module = new Module() { Name = body.ModuleName, Course = course };
 
-            Module module = new Module() { Name = body.ModuleName, Tags = new List<Tag>() };
-            course.Modules.Add(module);
-            await _context.SaveChangesAsync();
+                module = await database.AddModuleAsync(module);
 
-            return new ApiResponse(module.Id);
+                return new ApiResponse(module);
+            }
+            catch(ApiException exception)
+            {
+                return new ApiResponse(exception);
+            }
         }
-        */
 
         [HttpPost("course/create")]
         public async Task<IActionResult> CreateCourse([FromBody] CreateCourseBody body)
@@ -61,72 +82,40 @@ namespace TentaPApi.RestControllers
             }
         }
 
-        /*
-        [HttpPost("exercise/upload")]
-        public async Task<IActionResult> Upload([FromBody] UploadExerciseBody body)
+        [HttpPost("exercise/create")]
+        public async Task<IActionResult> Upload([FromBody] CreateExerciseBody body)
         {
-            string mode = "none";
-
             if (!body.Valid)
-                return new ApiResponse(body.GetInvalidBodyMessage(), System.Net.HttpStatusCode.BadRequest);
+                return new ApiResponse(body.GetInvalidBodyMessage(), HttpStatusCode.BadRequest);
 
-            Source source = _context.Source.Where(x => x.Id == body.SourceId).FirstOrDefault();
+            DatabaseManager database = new DatabaseManager();
+
+            Source source = await database.GetSourceAsync(body.SourceId);
+
             if (source == null)
-                return new ApiResponse("Invalid sourceId: " + body.SourceId, System.Net.HttpStatusCode.BadRequest);
+                return new ApiResponse("Invalid sourceId: " + body.SourceId, HttpStatusCode.BadRequest);
 
-            Exercise exercise = new Exercise()
-            {
-                Number = body.Number,
-                Source = source
-            };
+            Module module = await database.GetModuleAsync(body.ModuleId);
 
-            if (body.Id > 0)
-                exercise.Id = body.Id;
+            if (module == null)
+                return new ApiResponse("Invalid moduleId: " + body.ModuleId, HttpStatusCode.BadRequest);
 
-            Tag tag = _context.Course
-                        .Include(x => x.Modules)
-                        .ThenInclude(x => x.Tags)
-                        .ThenInclude(x => x.Exercises)
-                        .Where(x => x.Id == body.CourseId).SingleOrDefault().Modules
-                        .Where(x => x.Id == body.ModuleId).SingleOrDefault().Tags
-                        .Where(x => x.Id == body.TagId).SingleOrDefault();
+            ExerciseImageUploader imageUploader = new ExerciseImageUploader(body.ProblemImageData, body.SolutionImageData);
+            bool result = await imageUploader.UploadImagesAsync();
 
-            if (body.Id > 0 && tag.Exercises.Where(x => x.Id == exercise.Id).FirstOrDefault() != null)
-            {
-                exercise = tag.Exercises.Where(x => x.Id == exercise.Id).FirstOrDefault();
-                mode = "update";
-            }
-            else
-            {
-                tag.Exercises.Add(exercise);
-                mode = "create";
-            }
+            if (!result)
+                return new ApiResponse("Error when uploading images", HttpStatusCode.InternalServerError);
 
-            exercise.Number = body.Number;
+            Exercise exercise = body.GetExercise();
+            exercise.ProblemImage = imageUploader.ProblemImage;
+            exercise.SolutionImage = imageUploader.SolutionImage;
+            exercise.Source = source;
+            exercise.Module = module;
 
-            await _context.SaveChangesAsync();
+            exercise = await database.AddExerciseAsync(exercise);
 
-            Cloudinary cloudinary = CloudinaryHelper.GetCloudinary();
-
-            List<DeletionResult> deletionResults = await exercise.DestroyImagesIfExistsAsync(cloudinary);
-
-            ImageUploadParams questionImage = new ImageUploadParams();
-            questionImage.File = new FileDescription(string.Format("q{0}", exercise.Id), new MemoryStream(Convert.FromBase64String(body.ExerciseImageData)));
-            ImageUploadResult questionUploadResult = await cloudinary.UploadAsync(questionImage);
-
-            ImageUploadParams solutionImage = new ImageUploadParams();
-            solutionImage.File = new FileDescription(string.Format("s{0}", exercise.Id), new MemoryStream(Convert.FromBase64String(body.SolutionImageData)));
-            ImageUploadResult solutionUploadResult = await cloudinary.UploadAsync(solutionImage);
-
-            exercise.SolutionImageUrl = solutionUploadResult.Url.ToString();
-            exercise.ExerciseImageUrl = questionUploadResult.Url.ToString();
-            exercise.SolutionImageId = solutionUploadResult.PublicId;
-            exercise.ExerciseImageId = questionUploadResult.PublicId;
-            await _context.SaveChangesAsync();
-
-            return new ApiResponse(new { id = exercise.Id, exerciseUrl = questionUploadResult.Url, solutionUrl = solutionUploadResult.Url, mode, deletionResults });
+            return new ApiResponse(exercise);
         }
-        */
 
         /*
         [HttpDelete("exercise/remove")]
