@@ -7,6 +7,7 @@ using TentaPApi.Helpers;
 using TentaPApi.Managers;
 using TentaPApi.Models;
 using TentaPApi.RequestBodies;
+using WebApiUtilities.Helpers;
 
 namespace TentaPApi.RestControllers
 {
@@ -18,13 +19,23 @@ namespace TentaPApi.RestControllers
         [HttpPost("create")]
         public async Task<IActionResult> Create([FromBody] CreateUserRequestBody requestBody)
         {
-            DatabaseManager database = new DatabaseManager();
+            try
+            {
+                DatabaseManager database = new DatabaseManager();
 
-            if (!requestBody.Valid)
-                return new ApiResponse(requestBody.GetInvalidBodyMessage(), HttpStatusCode.BadRequest);
+                if (!requestBody.Valid)
+                    return new ApiResponse(requestBody.GetInvalidBodyMessage(), HttpStatusCode.BadRequest);
 
-            User createdUser = await database.AddUser(requestBody.GetUser());
-            return new ApiResponse(createdUser);
+                User user = requestBody.GetUser();
+                user.Password = PasswordHelper.CreatePasswordHash(user.Password);
+
+                user = await database.AddUser(user);
+                return new ApiResponse(user);
+            }
+            catch (ApiException apiException)
+            {
+                return new ApiResponse(apiException);
+            }
         }
 
         [AllowAnonymous]

@@ -3,5 +3,5 @@ id SERIAL PRIMARY KEY,
 name VARCHAR(100),
 email VARCHAR(255) UNIQUE NOT NULL,
 password VARCHAR(500),
-create_date DATE
+created_date DATE
 )

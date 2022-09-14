@@ -1,5 +1,6 @@
 ﻿using CloudinaryDotNet;
 using CloudinaryDotNet.Actions;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Sakur.WebApiUtilities.Models;
 using System;
@@ -20,6 +21,7 @@ namespace TentaPApi.RestControllers
     [ApiController]
     public class AdminController : ControllerBase
     {
+        [Authorize]
         [HttpPost("source/create")]
         public async Task<IActionResult> CreateSource([FromBody] CreateSourceBody body)
         {

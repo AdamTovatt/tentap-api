@@ -32,6 +32,8 @@ namespace TentaPApi.Managers
             {
                 await connection.OpenAsync();
 
+                command.Parameters.Add("@email", NpgsqlDbType.Varchar).Value = email.ToLower();
+
                 using (NpgsqlDataReader reader = await command.ExecuteReaderAsync())
                 {
                     while (await reader.ReadAsync())
@@ -47,22 +49,32 @@ namespace TentaPApi.Managers
 
         public async Task<User> AddUser(User user)
         {
-            const string query = @"INSERT INTO site_user (name, email, password, created_date)
+            try
+            {
+                const string query = @"INSERT INTO site_user (name, email, password, created_date)
                                     VALUES (@name, @email, @password, NOW())
                                     RETURNING id";
 
-            using (NpgsqlConnection connection = new NpgsqlConnection(ConnectionString))
-            using (NpgsqlCommand command = new NpgsqlCommand(query, connection))
+                using (NpgsqlConnection connection = new NpgsqlConnection(ConnectionString))
+                using (NpgsqlCommand command = new NpgsqlCommand(query, connection))
+                {
+                    await connection.OpenAsync();
+
+                    command.Parameters.Add("@name", NpgsqlDbType.Varchar).Value = user.Name;
+                    command.Parameters.Add("@email", NpgsqlDbType.Varchar).Value = user.Email.ToLower();
+                    command.Parameters.Add("@password", NpgsqlDbType.Varchar).Value = user.Password;
+
+                    user.Id = (int)await command.ExecuteScalarAsync();
+
+                    return user;
+                }
+            }
+            catch (PostgresException postgresException)
             {
-                await connection.OpenAsync();
-
-                command.Parameters.Add("@name", NpgsqlDbType.Integer).Value = user.Name;
-                command.Parameters.Add("@email", NpgsqlDbType.Integer).Value = user.Email.ToLower();
-                command.Parameters.Add("@password", NpgsqlDbType.Integer).Value = user.Password;
-
-                user.Id = (int)await command.ExecuteScalarAsync();
-
-                return user;
+                if (postgresException.SqlState == "23505") //unique constraint violation
+                    throw new ApiException("Email already registered", System.Net.HttpStatusCode.BadRequest);
+                else
+                    throw new ApiException(postgresException.Message, System.Net.HttpStatusCode.InternalServerError);
             }
         }
 
