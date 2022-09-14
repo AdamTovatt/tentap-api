@@ -191,15 +191,61 @@ namespace TentaPApi.Managers
 
         public async Task<Source> GetSourceAsync(int id)
         {
-            throw new NotImplementedException();
+            const string query = "SELECT id, course_id, author, source_date, created_by FROM source WHERE id = @id";
+
+            using (NpgsqlConnection connection = new NpgsqlConnection(ConnectionString))
+            using (NpgsqlCommand command = new NpgsqlCommand(query, connection))
+            {
+                await connection.OpenAsync();
+
+                command.Parameters.Add("@id", NpgsqlDbType.Integer).Value = id;
+
+                using (NpgsqlDataReader reader = await command.ExecuteReaderAsync())
+                {
+                    while (await reader.ReadAsync())
+                    {
+                        return Source.FromReader(reader);
+                    }
+                }
+            }
+
+            return null;
         }
 
         public async Task<Module> GetModuleAsync(int id)
         {
+            const string query = "SELECT id, course_id, name, created_by FROM module WHERE id = @id";
+
+            using (NpgsqlConnection connection = new NpgsqlConnection(ConnectionString))
+            using (NpgsqlCommand command = new NpgsqlCommand(query, connection))
+            {
+                await connection.OpenAsync();
+
+                command.Parameters.Add("@id", NpgsqlDbType.Integer).Value = id;
+
+                using (NpgsqlDataReader reader = await command.ExecuteReaderAsync())
+                {
+                    while (await reader.ReadAsync())
+                    {
+                        return Module.FromReader(reader);
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        public async Task<Exercise> GetExerciseByIdAsync(int id)
+        {
             throw new NotImplementedException();
         }
 
-        public async Task<Exercise> GetExerciseAsync(int userId, Difficulty[] difficulties)
+        public async Task<bool> RemoveExerciseAsync(int id)
+        {
+            throw new NotImplementedException();
+        }
+
+        public async Task<Exercise> GetExerciseForUserAsync(int userId, Difficulty[] difficulties)
         {
             //NpgsqlDbType.Array | NpgsqlDbType.Integer
 

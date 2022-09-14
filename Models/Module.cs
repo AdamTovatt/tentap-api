@@ -22,7 +22,7 @@ namespace TentaPApi.Data
 
         public static Module FromReader(NpgsqlDataReader reader)
         {
-            throw new NotImplementedException();
+            return new Module((int)reader["id"], reader["name"] as string) { Course = new Course() { Id = (int)reader["course_id"] } };
         }
     }
 }

@@ -55,7 +55,7 @@ namespace TentaPApi.RestControllers
 
                 return new ApiResponse(module);
             }
-            catch(ApiException exception)
+            catch (ApiException exception)
             {
                 return new ApiResponse(exception);
             }
@@ -76,7 +76,7 @@ namespace TentaPApi.RestControllers
 
                 return new ApiResponse(course);
             }
-            catch(ApiException exception)
+            catch (ApiException exception)
             {
                 return new ApiResponse(exception);
             }
@@ -85,54 +85,67 @@ namespace TentaPApi.RestControllers
         [HttpPost("exercise/create")]
         public async Task<IActionResult> Upload([FromBody] CreateExerciseBody body)
         {
-            if (!body.Valid)
-                return new ApiResponse(body.GetInvalidBodyMessage(), HttpStatusCode.BadRequest);
+            try
+            {
+                if (!body.Valid)
+                    return new ApiResponse(body.GetInvalidBodyMessage(), HttpStatusCode.BadRequest);
 
-            DatabaseManager database = new DatabaseManager();
+                DatabaseManager database = new DatabaseManager();
 
-            Source source = await database.GetSourceAsync(body.SourceId);
+                Source source = await database.GetSourceAsync(body.SourceId);
 
-            if (source == null)
-                return new ApiResponse("Invalid sourceId: " + body.SourceId, HttpStatusCode.BadRequest);
+                if (source == null)
+                    return new ApiResponse("Invalid sourceId: " + body.SourceId, HttpStatusCode.BadRequest);
 
-            Module module = await database.GetModuleAsync(body.ModuleId);
+                Module module = await database.GetModuleAsync(body.ModuleId);
 
-            if (module == null)
-                return new ApiResponse("Invalid moduleId: " + body.ModuleId, HttpStatusCode.BadRequest);
+                if (module == null)
+                    return new ApiResponse("Invalid moduleId: " + body.ModuleId, HttpStatusCode.BadRequest);
 
-            ExerciseImageUploader imageUploader = new ExerciseImageUploader(body.ProblemImageData, body.SolutionImageData);
-            bool result = await imageUploader.UploadImagesAsync();
+                ExerciseImageUploader imageUploader = new ExerciseImageUploader(body.ProblemImageData, body.SolutionImageData);
+                bool result = await imageUploader.UploadImagesAsync();
 
-            if (!result)
-                return new ApiResponse("Error when uploading images", HttpStatusCode.InternalServerError);
+                if (!result)
+                    return new ApiResponse("Error when uploading images", HttpStatusCode.InternalServerError);
 
-            Exercise exercise = body.GetExercise();
-            exercise.ProblemImage = imageUploader.ProblemImage;
-            exercise.SolutionImage = imageUploader.SolutionImage;
-            exercise.Source = source;
-            exercise.Module = module;
+                Exercise exercise = body.GetExercise();
+                exercise.ProblemImage = imageUploader.ProblemImage;
+                exercise.SolutionImage = imageUploader.SolutionImage;
+                exercise.Source = source;
+                exercise.Module = module;
 
-            exercise = await database.AddExerciseAsync(exercise);
+                exercise = await database.AddExerciseAsync(exercise);
 
-            return new ApiResponse(exercise);
+                return new ApiResponse(exercise);
+            }
+            catch (ApiException exception)
+            {
+                return new ApiResponse(exception);
+            }
         }
 
-        /*
         [HttpDelete("exercise/remove")]
         public async Task<IActionResult> Remove(int id)
         {
-            Exercise exercise = _context.Exercise.Where(x => x.Id == id).SingleOrDefault();
+            try
+            {
+                DatabaseManager database = new DatabaseManager();
+                Exercise exercise = await database.GetExerciseByIdAsync(id);
 
-            if (exercise == null)
-                return new ApiResponse("No such exercise, id: " + id, System.Net.HttpStatusCode.BadRequest);
+                if (exercise == null)
+                    return new ApiResponse("No such exercise, id: " + id, HttpStatusCode.BadRequest);
 
-            await exercise.DestroyImagesIfExistsAsync(CloudinaryHelper.GetCloudinary());
+                List<DeletionResult> deletionResults = await exercise.DestroyImagesIfExistsAsync(CloudinaryHelper.GetCloudinary());
 
-            _context.Remove(exercise);
-            await _context.SaveChangesAsync();
+                if (!await database.RemoveExerciseAsync(id))
+                    return new ApiResponse("Error when removing exercise: " + id, HttpStatusCode.InternalServerError);
 
-            return new ApiResponse();
+                return new ApiResponse("The exercise that had id " + id + " exists now only in our collective memory of it :'(");
+            }
+            catch (ApiException exception)
+            {
+                return new ApiResponse(exception);
+            }
         }
-        */
     }
 }

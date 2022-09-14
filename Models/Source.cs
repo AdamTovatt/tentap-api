@@ -17,13 +17,13 @@ namespace TentaPApi.Data
 
         [JsonProperty("course")]
         public Course Course { get; set; }
-
+       
         [JsonProperty("date")]
         public DateTime Date { get; set; }
 
         public static Source FromReader(NpgsqlDataReader reader)
         {
-            throw new NotImplementedException();
+            return new Source() { Author = reader["author"] as string, Course = new Course() { Id = (int)reader["id"] }, Date = (DateTime)reader["date"], Id = (int)reader["id"] };
         }
     }
 }
