@@ -237,17 +237,62 @@ namespace TentaPApi.Managers
 
         public async Task<Exercise> GetExerciseByIdAsync(int id)
         {
-            throw new NotImplementedException();
+            const string query = @"SELECT
+	                                    e.id,
+	                                    e.difficulty,
+	                                    e.module_id,
+	                                    e.problem_image,
+	                                    e.solution_image,
+	                                    e.source_id,
+	                                    s.author,
+	                                    s.course_id,
+	                                    s.source_date,
+	                                    m.name,
+	                                    m.id ""module_id""
+                                    FROM
+                                        exercise e
+                                    JOIN
+                                        source s ON e.source_id = s.id
+                                        course_module m ON e.module_id = m.id
+                                    WHERE id = @id";
+
+            using (NpgsqlConnection connection = new NpgsqlConnection(ConnectionString))
+            using (NpgsqlCommand command = new NpgsqlCommand(query, connection))
+            {
+                await connection.OpenAsync();
+
+                command.Parameters.Add("@id", NpgsqlDbType.Integer).Value = id;
+
+                using (NpgsqlDataReader reader = await command.ExecuteReaderAsync())
+                {
+                    while (await reader.ReadAsync())
+                    {
+                        return Exercise.FromReader(reader);
+                    }
+                }
+            }
+
+            return null;
         }
 
         public async Task<bool> RemoveExerciseAsync(int id)
         {
-            throw new NotImplementedException();
+            const string query = "DELETE FROM exercise WHERE id = @id";
+
+            using (NpgsqlConnection connection = new NpgsqlConnection(ConnectionString))
+            using (NpgsqlCommand command = new NpgsqlCommand(query, connection))
+            {
+                await connection.OpenAsync();
+
+                command.Parameters.Add("@id", NpgsqlDbType.Integer).Value = id;
+
+                return await command.ExecuteNonQueryAsync() == 1;
+            }
         }
 
         public async Task<Exercise> GetExerciseForUserAsync(int userId, Difficulty[] difficulties)
         {
-            //NpgsqlDbType.Array | NpgsqlDbType.Integer
+            List<Exercise> exercises = new List<Exercise>();
 
             const string query = @"SELECT
 	                                    e.id,
@@ -270,7 +315,7 @@ namespace TentaPApi.Managers
                                         e.id NOT IN(SELECT id FROM user_completed_exercise uce WHERE uce.user_id = @userId) AND
                                         e.difficulty IN @difficulties
                                     ORDER BY s.source_date DESC
-                                    TOP 1";
+                                    TOP 10";
 
             using (NpgsqlConnection connection = new NpgsqlConnection(ConnectionString))
             using (NpgsqlCommand command = new NpgsqlCommand(query, connection))
@@ -284,12 +329,15 @@ namespace TentaPApi.Managers
                 {
                     while (await reader.ReadAsync())
                     {
-                        return Exercise.FromReader(reader);
+                        exercises.Add(Exercise.FromReader(reader));
                     }
                 }
             }
 
-            return null;
+            if (exercises.Count == 0)
+                return null;
+
+            return exercises.TakeRandom();
         }
     }
 }
