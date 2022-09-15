@@ -1,5 +1,6 @@
 ﻿using CloudinaryDotNet;
 using CloudinaryDotNet.Actions;
+using Sakur.WebApiUtilities.Models;
 using System;
 using System.IO;
 using System.Threading.Tasks;
@@ -27,23 +28,33 @@ namespace TentaPApi.Managers
 
         public async Task<bool> UploadImagesAsync()
         {
-            Cloudinary cloudinary = CloudinaryHelper.GetCloudinary();
+            try
+            {
+                MemoryStream problemStream = new MemoryStream(Convert.FromBase64String(ProblemData));
+                MemoryStream solutionStream = new MemoryStream(Convert.FromBase64String(SolutionData));
 
-            ProblemUuid = Guid.NewGuid().ToString();
-            SolutionUuid = Guid.NewGuid().ToString();
+                Cloudinary cloudinary = CloudinaryHelper.GetCloudinary();
 
-            ImageUploadParams problemImage = new ImageUploadParams();
-            problemImage.File = new FileDescription(string.Format("q{0}", ProblemUuid), new MemoryStream(Convert.FromBase64String(ProblemData)));
-            ImageUploadResult questionUploadResult = await cloudinary.UploadAsync(problemImage);
+                ProblemUuid = Guid.NewGuid().ToString();
+                SolutionUuid = Guid.NewGuid().ToString();
 
-            ImageUploadParams solutionImage = new ImageUploadParams();
-            solutionImage.File = new FileDescription(string.Format("s{0}", SolutionUuid), new MemoryStream(Convert.FromBase64String(SolutionData)));
-            ImageUploadResult solutionUploadResult = await cloudinary.UploadAsync(solutionImage);
+                ImageUploadParams problemImage = new ImageUploadParams();
+                problemImage.File = new FileDescription(string.Format("q{0}", ProblemUuid), problemStream);
+                ImageUploadResult questionUploadResult = await cloudinary.UploadAsync(problemImage);
 
-            ProblemImage = new CloudinaryImage() { Url = solutionUploadResult.Url.ToString() };
-            SolutionImage = new CloudinaryImage() { Url = questionUploadResult.Url.ToString() };
+                ImageUploadParams solutionImage = new ImageUploadParams();
+                solutionImage.File = new FileDescription(string.Format("s{0}", SolutionUuid), solutionStream);
+                ImageUploadResult solutionUploadResult = await cloudinary.UploadAsync(solutionImage);
 
-            return true;
+                ProblemImage = new CloudinaryImage() { Url = solutionUploadResult.Url.ToString() };
+                SolutionImage = new CloudinaryImage() { Url = questionUploadResult.Url.ToString() };
+
+                return true;
+            }
+            catch(FormatException)
+            {
+                throw new ApiException("Invalid base64 string in data", System.Net.HttpStatusCode.BadRequest);
+            }
         }
     }
 }

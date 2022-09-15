@@ -107,19 +107,30 @@ namespace TentaPApi.RestControllers
                 if (module == null)
                     return new ApiResponse("Invalid moduleId: " + body.ModuleId, HttpStatusCode.BadRequest);
 
-                ExerciseImageUploader imageUploader = new ExerciseImageUploader(body.ProblemImageData, body.SolutionImageData);
-                bool result = await imageUploader.UploadImagesAsync();
-
-                if (!result)
-                    return new ApiResponse("Error when uploading images", HttpStatusCode.InternalServerError);
-
                 Exercise exercise = body.GetExercise();
-                exercise.ProblemImage = imageUploader.ProblemImage;
-                exercise.SolutionImage = imageUploader.SolutionImage;
+
+                if (body.Id != 0)
+                    exercise.Combine(await database.GetExerciseByIdAsync(body.Id));
+
+                if (!string.IsNullOrEmpty(body.ProblemImageData) && !string.IsNullOrEmpty(body.SolutionImageData))
+                {
+                    ExerciseImageUploader imageUploader = new ExerciseImageUploader(body.ProblemImageData, body.SolutionImageData);
+                    bool result = await imageUploader.UploadImagesAsync();
+
+                    if (!result)
+                        return new ApiResponse("Error when uploading images", HttpStatusCode.InternalServerError);
+
+                    exercise.ProblemImage = imageUploader.ProblemImage;
+                    exercise.SolutionImage = imageUploader.SolutionImage;
+                }
+
                 exercise.Source = source;
                 exercise.Module = module;
 
-                exercise = await database.AddExerciseAsync(exercise);
+                if (body.Id == 0)
+                    exercise = await database.AddExerciseAsync(exercise);
+                else
+                    exercise = await database.UpdateExerciseAsync(exercise);
 
                 return new ApiResponse(exercise);
             }

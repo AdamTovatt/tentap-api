@@ -58,5 +58,19 @@ namespace TentaPApi.Data
 
             return result;
         }
+
+        public void Combine(Exercise databaseExercise)
+        {
+            if (Difficulty == 0)
+                Difficulty = databaseExercise.Difficulty;
+            if (Module == null)
+                Module = databaseExercise.Module;
+            if (Source == null)
+                Source = databaseExercise.Source;
+            if (ProblemImage == null)
+                ProblemImage = databaseExercise.ProblemImage;
+            if (SolutionImage == null)
+                SolutionImage = databaseExercise.SolutionImage;
+        }
     }
 }

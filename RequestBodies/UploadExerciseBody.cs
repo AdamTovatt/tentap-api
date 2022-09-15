@@ -25,7 +25,7 @@ namespace TentaPApi.RequestBodies
         [JsonProperty("solutionImageData")]
         public string SolutionImageData { get; set; }
 
-        public override bool Valid { get { return SourceId != 0 && !string.IsNullOrEmpty(ProblemImageData) && !string.IsNullOrEmpty(SolutionImageData); } }
+        public override bool Valid { get { return SourceId != 0; } }
 
         public CreateExerciseBody() { }
 
