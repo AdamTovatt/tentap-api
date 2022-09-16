@@ -356,15 +356,16 @@ namespace TentaPApi.Managers
             }
         }
 
-        public async Task<Exercise> GetExerciseForUserAsync(int userId, Difficulty[] difficulties)
+        public async Task<Exercise> GetExerciseForUserAsync(Difficulty[] difficulties, int courseId)
         {
             List<Exercise> exercises = new List<Exercise>();
 
             const string query = @"SELECT
 	                                    e.id,
-	                                    e.difficulty,
+                                        e.active,
 	                                    e.module_id,
 	                                    e.problem_image,
+	                                    e.difficulty,
 	                                    e.solution_image,
 	                                    e.source_id,
 	                                    s.author,
@@ -376,20 +377,24 @@ namespace TentaPApi.Managers
                                         exercise e
                                     JOIN
                                         source s ON e.source_id = s.id
+                                    JOIN
                                         course_module m ON e.module_id = m.id
                                     WHERE
-                                        e.id NOT IN(SELECT id FROM user_completed_exercise uce WHERE uce.user_id = @userId) AND
-                                        e.difficulty IN @difficulties
+                                        e.id NOT IN (SELECT uce.exercise_id FROM user_completed_exercise uce WHERE uce.user_id = @user_id) AND
+                                        e.difficulty = ANY(@difficulties) AND
+                                        m.course_id = @course_id AND
+                                        e.active = TRUE
                                     ORDER BY s.source_date DESC
-                                    TOP 10";
+                                    LIMIT 10";
 
             using (NpgsqlConnection connection = new NpgsqlConnection(ConnectionString))
             using (NpgsqlCommand command = new NpgsqlCommand(query, connection))
             {
                 await connection.OpenAsync();
 
-                command.Parameters.Add("@userId", NpgsqlDbType.Integer).Value = userId;
-                command.Parameters.Add("@userId", NpgsqlDbType.Array | NpgsqlDbType.Integer).Value = difficulties;
+                command.Parameters.Add("@user_id", NpgsqlDbType.Integer).Value = UserId;
+                command.Parameters.Add("@difficulties", NpgsqlDbType.Array | NpgsqlDbType.Integer).Value = difficulties.ToIntArray();
+                command.Parameters.Add("@course_id", NpgsqlDbType.Integer).Value = courseId;
 
                 using (NpgsqlDataReader reader = await command.ExecuteReaderAsync())
                 {

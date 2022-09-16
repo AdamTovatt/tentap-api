@@ -53,8 +53,8 @@ namespace TentaPApi.Data
             result.Module = new Module((int)reader["module_id"], reader["name"] as string);
             result.Source = new Source() { Id = (int)reader["source_id"], Author = reader["author"] as string, Course = new Course() { Id = (int)reader["course_id"] }, Date = (DateTime)reader["source_date"] };
 
-            CloudinaryImage problemImage = new CloudinaryImage() { Url = reader["problem_image"] as string };
-            CloudinaryImage solutionImage = new CloudinaryImage() { Url = reader["solution_image"] as string };
+            result.ProblemImage = new CloudinaryImage() { Url = reader["problem_image"] as string };
+            result.SolutionImage = new CloudinaryImage() { Url = reader["solution_image"] as string };
 
             return result;
         }

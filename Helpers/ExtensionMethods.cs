@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using TentaPApi.Models;
 
 namespace TentaPApi.Helpers
 {
@@ -27,6 +28,16 @@ namespace TentaPApi.Helpers
                 return userId;
 
             throw new ApiException("invalid id in token object", HttpStatusCode.BadRequest);
+        }
+
+        public static int[] ToIntArray(this Difficulty[] original)
+        {
+            int[] result = new int[original.Length];
+
+            for (int i = 0; i < original.Length; i++)
+                result[i] = (int)original[i];
+
+            return result;
         }
     }
 }
