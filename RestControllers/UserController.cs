@@ -44,6 +44,9 @@ namespace TentaPApi.RestControllers
         {
             try
             {
+                if(!userLoginInformation.Valid)
+                    return new ApiResponse(userLoginInformation.GetInvalidBodyMessage(), HttpStatusCode.BadRequest);
+
                 DatabaseManager database = new DatabaseManager();
                 User user = await database.GetUserByEmailAsync(userLoginInformation.Email);
 
