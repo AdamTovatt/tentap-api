@@ -16,6 +16,9 @@ namespace TentaPApi.Models
         [JsonProperty("name")]
         public string Name { get; set; }
 
+        [JsonProperty("role")]
+        public string Role { get; set; }
+
         public TokenResponse(string token, User user)
         {
             Token = token;

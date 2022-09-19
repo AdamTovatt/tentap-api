@@ -38,7 +38,7 @@ namespace TentaPApi.RestControllers
                 if (authenticatedUser != null)
                 {
                     var tokenString = UserHelper.GenerateJsonWebToken(user);
-                    return new ApiResponse(new TokenResponse(tokenString, user));
+                    return new ApiResponse(new TokenResponse(tokenString, user) { Role = user.Role });
                 }
 
                 return new ApiResponse(user, HttpStatusCode.InternalServerError);
@@ -69,7 +69,7 @@ namespace TentaPApi.RestControllers
                 if (authenticatedUser != null)
                 {
                     var tokenString = UserHelper.GenerateJsonWebToken(user);
-                    return new ApiResponse(new TokenResponse(tokenString, user));
+                    return new ApiResponse(new TokenResponse(tokenString, user) { Role = user.Role });
                 }
 
                 return new ApiResponse("Invalid username and/or password", HttpStatusCode.Unauthorized);
