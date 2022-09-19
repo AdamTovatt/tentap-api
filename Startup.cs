@@ -103,7 +103,10 @@ namespace TentaPApi
             app.UseCors(x => x
                 .AllowAnyOrigin()
                 .AllowAnyMethod()
-                .AllowAnyHeader());
+                .AllowAnyHeader()
+                .WithExposedHeaders("content-disposition")
+                .AllowCredentials()
+                .SetPreflightMaxAge(TimeSpan.FromSeconds(3600)));
 
             app.UseAuthorization();
 
