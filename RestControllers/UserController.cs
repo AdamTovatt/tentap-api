@@ -30,6 +30,17 @@ namespace TentaPApi.RestControllers
                 user.Password = PasswordHelper.CreatePasswordHash(user.Password);
 
                 user = await database.AddUser(user);
+
+                user = await database.GetUserByEmailAsync(requestBody.Email);
+
+                UserLoginRequestBody authenticatedUser = UserHelper.AuthenticateUser(new UserLoginRequestBody() {Email = requestBody.Email, Password = requestBody.Password }, user);
+
+                if (authenticatedUser != null)
+                {
+                    var tokenString = UserHelper.GenerateJsonWebToken(user);
+                    return new ApiResponse(new TokenResponse(tokenString, user));
+                }
+
                 return new ApiResponse(user);
             }
             catch (ApiException apiException)
