@@ -41,7 +41,7 @@ namespace TentaPApi.RestControllers
                     return new ApiResponse(new TokenResponse(tokenString, user));
                 }
 
-                return new ApiResponse(user);
+                return new ApiResponse(user, HttpStatusCode.InternalServerError);
             }
             catch (ApiException apiException)
             {
