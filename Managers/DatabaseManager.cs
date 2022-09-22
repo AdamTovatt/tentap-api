@@ -254,6 +254,31 @@ namespace TentaPApi.Managers
             return null;
         }
 
+        public async Task<List<Source>> GetSourcesByCourseAsync(int courseId)
+        {
+            const string query = "SELECT id, course_id, author, source_date, created_by FROM source WHERE course_id = @id";
+
+            List<Source> result = new List<Source>();
+
+            using (NpgsqlConnection connection = new NpgsqlConnection(ConnectionString))
+            using (NpgsqlCommand command = new NpgsqlCommand(query, connection))
+            {
+                await connection.OpenAsync();
+
+                command.Parameters.Add("@id", NpgsqlDbType.Integer).Value = courseId;
+
+                using (NpgsqlDataReader reader = await command.ExecuteReaderAsync())
+                {
+                    while (await reader.ReadAsync())
+                    {
+                        result.Add(Source.FromReader(reader));
+                    }
+                }
+            }
+
+            return result;
+        }
+
         public async Task<Source> GetSourceAsync(int id)
         {
             const string query = "SELECT id, course_id, author, source_date, created_by FROM source WHERE id = @id";
