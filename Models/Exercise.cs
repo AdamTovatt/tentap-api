@@ -63,9 +63,9 @@ namespace TentaPApi.Data
         {
             if (Difficulty == 0)
                 Difficulty = databaseExercise.Difficulty;
-            if (Module == null)
+            if (Module == null || Module.Id == 0)
                 Module = databaseExercise.Module;
-            if (Source == null)
+            if (Source == null || Source.Id == 0)
                 Source = databaseExercise.Source;
             if (ProblemImage == null)
                 ProblemImage = databaseExercise.ProblemImage;

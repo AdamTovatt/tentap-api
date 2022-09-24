@@ -97,14 +97,14 @@ namespace TentaPApi.RestControllers
 
                 DatabaseManager database = new DatabaseManager(UserHelper.GetClaims(User).GetUserId());
 
-                Source source = await database.GetSourceAsync(body.SourceId);
+                Source source = body.Id == 0 ? await database.GetSourceAsync(body.SourceId) : null;
 
-                if (source == null)
+                if (source == null && body.Id == 0)
                     return new ApiResponse("Invalid sourceId: " + body.SourceId, HttpStatusCode.BadRequest);
 
-                Module module = await database.GetModuleAsync(body.ModuleId);
+                Module module = body.Id == 0 ? await database.GetModuleAsync(body.ModuleId) : null;
 
-                if (module == null)
+                if (module == null && body.Id == 0)
                     return new ApiResponse("Invalid moduleId: " + body.ModuleId, HttpStatusCode.BadRequest);
 
                 Exercise exercise = body.GetExercise();
@@ -124,8 +124,8 @@ namespace TentaPApi.RestControllers
                     exercise.SolutionImage = imageUploader.SolutionImage;
                 }
 
-                exercise.Source = source;
-                exercise.Module = module;
+                exercise.Source = source == null ? exercise.Source : source;
+                exercise.Module = module == null ? exercise.Module : module;
 
                 if (body.Id == 0)
                     exercise = await database.AddExerciseAsync(exercise);
