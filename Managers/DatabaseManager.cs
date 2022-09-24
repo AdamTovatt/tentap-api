@@ -279,6 +279,31 @@ namespace TentaPApi.Managers
             return result;
         }
 
+        public async Task<List<Module>> GetModulesByCourseAsync(int courseId)
+        {
+            const string query = "SELECT id, course_id, name, created_by FROM course_module WHERE course_id = @id";
+
+            List<Module> result = new List<Module>();
+
+            using (NpgsqlConnection connection = new NpgsqlConnection(ConnectionString))
+            using (NpgsqlCommand command = new NpgsqlCommand(query, connection))
+            {
+                await connection.OpenAsync();
+
+                command.Parameters.Add("@id", NpgsqlDbType.Integer).Value = courseId;
+
+                using (NpgsqlDataReader reader = await command.ExecuteReaderAsync())
+                {
+                    while (await reader.ReadAsync())
+                    {
+                        result.Add(Module.FromReader(reader));
+                    }
+                }
+            }
+
+            return result;
+        }
+
         public async Task<Source> GetSourceAsync(int id)
         {
             const string query = "SELECT id, course_id, author, source_date, created_by FROM source WHERE id = @id";
