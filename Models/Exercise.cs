@@ -21,7 +21,7 @@ namespace TentaPApi.Data
         public Difficulty Difficulty { get; set; }
 
         [JsonProperty("module")]
-        public Module Module;
+        public Module Module { get; set; }
 
         [JsonProperty("problem")]
         public CloudinaryImage ProblemImage { get; set; }
