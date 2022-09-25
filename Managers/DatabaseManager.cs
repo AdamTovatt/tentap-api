@@ -406,6 +406,79 @@ namespace TentaPApi.Managers
             }
         }
 
+        public async Task<bool> ActivateExerciseAsync(int exerciseId)
+        {
+            const string query = "UPDATE exercise SET active = true WHERE id = @id";
+
+            using (NpgsqlConnection connection = new NpgsqlConnection(ConnectionString))
+            using (NpgsqlCommand command = new NpgsqlCommand(query, connection))
+            {
+                await connection.OpenAsync();
+
+                command.Parameters.Add("@id", NpgsqlDbType.Integer).Value = exerciseId;
+
+                return await command.ExecuteNonQueryAsync() == 1;
+            }
+        }
+
+        public async Task<List<Exercise>> GetExercisesByCourseAsync(int courseId, bool onlyInactive)
+        {
+            List<Exercise> exercises = new List<Exercise>();
+
+            string query = @"SELECT
+	                                    e.id,
+                                        e.active,
+	                                    e.module_id,
+	                                    e.problem_image,
+	                                    e.difficulty,
+	                                    e.solution_image,
+	                                    e.source_id,
+                                        e.created_date,
+	                                    s.author,
+	                                    s.course_id,
+	                                    s.source_date,
+	                                    m.name,
+	                                    m.id ""module_id""
+                                    FROM
+                                        exercise e
+                                    JOIN
+                                        source s ON e.source_id = s.id
+                                    JOIN
+                                        course_module m ON e.module_id = m.id
+                                    WHERE
+                                        m.course_id = @course_id";
+
+            if (onlyInactive)
+            {
+                query += @" AND e.active = false ORDER BY e.created_date DESC";
+            }
+            else
+            {
+                query += @" ORDER BY e.created_date DESC";
+            }
+
+            using (NpgsqlConnection connection = new NpgsqlConnection(ConnectionString))
+            using (NpgsqlCommand command = new NpgsqlCommand(query, connection))
+            {
+                await connection.OpenAsync();
+
+                command.Parameters.Add("@course_id", NpgsqlDbType.Integer).Value = courseId;
+
+                using (NpgsqlDataReader reader = await command.ExecuteReaderAsync())
+                {
+                    while (await reader.ReadAsync())
+                    {
+                        exercises.Add(Exercise.FromReader(reader));
+                    }
+                }
+            }
+
+            if (exercises.Count == 0)
+                return null;
+
+            return exercises;
+        }
+
         public async Task<Exercise> GetExerciseForUserAsync(Difficulty[] difficulties, int courseId)
         {
             List<Exercise> exercises = new List<Exercise>();

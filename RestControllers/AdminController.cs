@@ -140,6 +140,30 @@ namespace TentaPApi.RestControllers
             }
         }
 
+
+        [Authorize(Roles = "1,2")]
+        [HttpPost("exercise/activate")]
+        public async Task<IActionResult> Activate(int id)
+        {
+            try
+            {
+                DatabaseManager database = new DatabaseManager(UserHelper.GetClaims(User).GetUserId());
+                Exercise exercise = await database.GetExerciseByIdAsync(id);
+
+                if (exercise == null)
+                    return new ApiResponse("No such exercise, id: " + id, HttpStatusCode.BadRequest);
+
+                if (!await database.ActivateExerciseAsync(id))
+                    return new ApiResponse("Error when removing exercise: " + id, HttpStatusCode.InternalServerError);
+
+                return new ApiResponse("Exercise was activated");
+            }
+            catch (ApiException exception)
+            {
+                return new ApiResponse(exception);
+            }
+        }
+
         [Authorize(Roles = "1,2")]
         [HttpDelete("exercise/remove")]
         public async Task<IActionResult> Remove(int id)

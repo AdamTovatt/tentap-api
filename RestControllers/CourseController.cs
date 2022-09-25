@@ -96,6 +96,25 @@ namespace TentaPApi.RestControllers
         }
 
         [AllowAnonymous]
+        [HttpGet("exercise/getAll")]
+        public async Task<IActionResult> GetNextExercise(int courseId, bool onlyInactive)
+        {
+            try
+            {
+                if (courseId == 0)
+                    return new ApiResponse("Missing courseId query parameter, should be id of course", HttpStatusCode.BadRequest);
+
+                DatabaseManager database = new DatabaseManager(UserHelper.GetClaims(User).GetUserId());
+
+                return new ApiResponse(await database.GetExercisesByCourseAsync(courseId, onlyInactive));
+            }
+            catch (ApiException exception)
+            {
+                return new ApiResponse(exception);
+            }
+        }
+
+        [AllowAnonymous]
         [HttpGet("exercise/get")]
         public async Task<IActionResult> GetNextExercise(int exerciseId)
         {
