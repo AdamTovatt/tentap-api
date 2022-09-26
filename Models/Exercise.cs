@@ -32,6 +32,9 @@ namespace TentaPApi.Data
         [JsonProperty("source")]
         public Source Source { get; set; }
 
+        [JsonProperty("isActive")]
+        public bool IsActive { get; set; }
+
         public async Task<List<DeletionResult>> DestroyImagesIfExistsAsync(Cloudinary cloudinary)
         {
             List<DeletionResult> deletionResults = new List<DeletionResult>();
@@ -52,6 +55,7 @@ namespace TentaPApi.Data
             result.Difficulty = (Difficulty)reader["difficulty"];
             result.Module = new Module((int)reader["module_id"], reader["name"] as string);
             result.Source = new Source() { Id = (int)reader["source_id"], Author = reader["author"] as string, Course = new Course() { Id = (int)reader["course_id"] }, Date = (DateTime)reader["source_date"] };
+            result.IsActive = (bool)reader["active"];
 
             result.ProblemImage = new CloudinaryImage() { Url = reader["problem_image"] as string };
             result.SolutionImage = new CloudinaryImage() { Url = reader["solution_image"] as string };

@@ -354,6 +354,7 @@ namespace TentaPApi.Managers
         {
             const string query = @"SELECT
 	                                    e.id,
+                                        e.active,
 	                                    e.difficulty,
 	                                    e.module_id,
 	                                    e.problem_image,
