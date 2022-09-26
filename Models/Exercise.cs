@@ -36,10 +36,10 @@ namespace TentaPApi.Data
         {
             List<DeletionResult> deletionResults = new List<DeletionResult>();
 
-            if (SolutionImage != null)
+            if (SolutionImage != null && SolutionImage.IsNull())
                 deletionResults.Add(await cloudinary.DestroyAsync(new DeletionParams(SolutionImage.Id)));
 
-            if (ProblemImage != null)
+            if (ProblemImage != null && SolutionImage.IsNull())
                 deletionResults.Add(await cloudinary.DestroyAsync(new DeletionParams(ProblemImage.Id)));
 
             return deletionResults;

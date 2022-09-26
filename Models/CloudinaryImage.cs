@@ -22,5 +22,10 @@ namespace TentaPApi.Models
 
             _id = Url.Split("/").Last().Split(".")[0];
         }
+
+        public bool IsNull()
+        {
+            return Url != null;
+        }
     }
 }
