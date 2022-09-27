@@ -20,6 +20,9 @@ namespace TentaPApi.Data
         [JsonProperty("name")]
         public string Name { get; set; }
 
+        [JsonProperty("active")]
+        public bool Active { get; set; }
+
         public Course() { }
 
         public Course(int id, string name, string code)
@@ -31,7 +34,7 @@ namespace TentaPApi.Data
 
         public static Course FromReader(NpgsqlDataReader reader)
         {
-            return new Course((int)reader["id"], reader["name"] as string, reader["code"] as string);
+            return new Course((int)reader["id"], reader["name"] as string, reader["code"] as string) { Active = (bool)reader["active"] };
         }
     }
 }

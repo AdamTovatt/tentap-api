@@ -140,10 +140,33 @@ namespace TentaPApi.RestControllers
             }
         }
 
+        [Authorize(Roles = "1,2")]
+        [HttpPost("course/setActive")]
+        public async Task<IActionResult> SetCourseActiveStatus(int id, bool active)
+        {
+            try
+            {
+                DatabaseManager database = new DatabaseManager(UserHelper.GetClaims(User).GetUserId());
+                Course course = await database.GetCourseAsync(id);
+
+                if (course == null)
+                    return new ApiResponse("No such course, id: " + id, HttpStatusCode.BadRequest);
+
+                if (!await database.SetCourseActiveStatusAsync(id, active))
+                    return new ApiResponse("Error when activating course: " + id, HttpStatusCode.InternalServerError);
+
+                return new ApiResponse("Exercise was activated");
+            }
+            catch (ApiException exception)
+            {
+                return new ApiResponse(exception);
+            }
+        }
+
 
         [Authorize(Roles = "1,2")]
-        [HttpPost("exercise/activate")]
-        public async Task<IActionResult> Activate(int id)
+        [HttpPost("exercise/setActive")]
+        public async Task<IActionResult> SetExerciseActiveStatus(int id, bool active)
         {
             try
             {
@@ -153,8 +176,8 @@ namespace TentaPApi.RestControllers
                 if (exercise == null)
                     return new ApiResponse("No such exercise, id: " + id, HttpStatusCode.BadRequest);
 
-                if (!await database.ActivateExerciseAsync(id))
-                    return new ApiResponse("Error when removing exercise: " + id, HttpStatusCode.InternalServerError);
+                if (!await database.SetExerciseActiveStatus(id, active))
+                    return new ApiResponse("Error when activating exercise: " + id, HttpStatusCode.InternalServerError);
 
                 return new ApiResponse("Exercise was activated");
             }

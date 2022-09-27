@@ -24,13 +24,13 @@ namespace TentaPApi.RestControllers
     {
         [AllowAnonymous]
         [HttpGet("getall")]
-        public async Task<IActionResult> GetCourses()
+        public async Task<IActionResult> GetCourses(bool includeInactive)
         {
             try
             {
                 DatabaseManager database = new DatabaseManager(UserHelper.GetClaims(User).GetUserId());
 
-                return new ApiResponse(await database.GetCoursesAsync());
+                return new ApiResponse(await database.GetCoursesAsync(includeInactive));
             }
             catch (ApiException exception)
             {

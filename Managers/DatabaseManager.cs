@@ -208,11 +208,13 @@ namespace TentaPApi.Managers
             }
         }
 
-        public async Task<List<Course>> GetCoursesAsync()
+        public async Task<List<Course>> GetCoursesAsync(bool includeInactive)
         {
             List<Course> result = new List<Course>();
 
-            const string query = "SELECT id, code, name FROM course";
+            string query = "SELECT id, code, name, active FROM course WHERE active = true";
+            if(includeInactive)
+                query = "SELECT id, code, name, active FROM course";
 
             using (NpgsqlConnection connection = new NpgsqlConnection(ConnectionString))
             using (NpgsqlCommand command = new NpgsqlCommand(query, connection))
@@ -233,7 +235,7 @@ namespace TentaPApi.Managers
 
         public async Task<Course> GetCourseAsync(int id)
         {
-            const string query = "SELECT id, code, name FROM course WHERE id = @id";
+            const string query = "SELECT id, code, active, name FROM course WHERE id = @id";
 
             using (NpgsqlConnection connection = new NpgsqlConnection(ConnectionString))
             using (NpgsqlCommand command = new NpgsqlCommand(query, connection))
@@ -407,9 +409,24 @@ namespace TentaPApi.Managers
             }
         }
 
-        public async Task<bool> ActivateExerciseAsync(int exerciseId)
+        public async Task<bool> DeActivateCourseAsync(int courseId)
         {
-            const string query = "UPDATE exercise SET active = true WHERE id = @id";
+            const string query = "UPDATE course SET active = false WHERE id = @id";
+
+            using (NpgsqlConnection connection = new NpgsqlConnection(ConnectionString))
+            using (NpgsqlCommand command = new NpgsqlCommand(query, connection))
+            {
+                await connection.OpenAsync();
+
+                command.Parameters.Add("@id", NpgsqlDbType.Integer).Value = courseId;
+
+                return await command.ExecuteNonQueryAsync() == 1;
+            }
+        }
+
+        public async Task<bool> DeActivateExerciseAsync(int exerciseId)
+        {
+            const string query = "UPDATE exercise SET active = false WHERE id = @id";
 
             using (NpgsqlConnection connection = new NpgsqlConnection(ConnectionString))
             using (NpgsqlCommand command = new NpgsqlCommand(query, connection))
@@ -417,6 +434,38 @@ namespace TentaPApi.Managers
                 await connection.OpenAsync();
 
                 command.Parameters.Add("@id", NpgsqlDbType.Integer).Value = exerciseId;
+
+                return await command.ExecuteNonQueryAsync() == 1;
+            }
+        }
+
+        public async Task<bool> SetCourseActiveStatusAsync(int courseId, bool active)
+        {
+            const string query = "UPDATE course SET active = @active WHERE id = @id";
+
+            using (NpgsqlConnection connection = new NpgsqlConnection(ConnectionString))
+            using (NpgsqlCommand command = new NpgsqlCommand(query, connection))
+            {
+                await connection.OpenAsync();
+
+                command.Parameters.Add("@id", NpgsqlDbType.Integer).Value = courseId;
+                command.Parameters.Add("@active", NpgsqlDbType.Boolean).Value = active;
+
+                return await command.ExecuteNonQueryAsync() == 1;
+            }
+        }
+
+        public async Task<bool> SetExerciseActiveStatus(int exerciseId, bool active)
+        {
+            const string query = "UPDATE exercise SET active = @active WHERE id = @id";
+
+            using (NpgsqlConnection connection = new NpgsqlConnection(ConnectionString))
+            using (NpgsqlCommand command = new NpgsqlCommand(query, connection))
+            {
+                await connection.OpenAsync();
+
+                command.Parameters.Add("@id", NpgsqlDbType.Integer).Value = exerciseId;
+                command.Parameters.Add("@active", NpgsqlDbType.Boolean).Value = active;
 
                 return await command.ExecuteNonQueryAsync() == 1;
             }
