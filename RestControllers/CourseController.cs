@@ -116,7 +116,7 @@ namespace TentaPApi.RestControllers
 
         [AllowAnonymous]
         [HttpGet("exercise/get")]
-        public async Task<IActionResult> GetNextExercise(int exerciseId)
+        public async Task<IActionResult> GetExerciseById(int exerciseId)
         {
             try
             {
@@ -153,6 +153,37 @@ namespace TentaPApi.RestControllers
                 DatabaseManager database = new DatabaseManager(UserHelper.GetClaims(User).GetUserId());
 
                 return new ApiResponse(await database.GetExerciseForUserAsync(difficultyList.ToArray(), courseId));
+            }
+            catch (ApiException exception)
+            {
+                return new ApiResponse(exception);
+            }
+        }
+
+        [Authorize]
+        [HttpPost("exercise/setCompleted")]
+        public async Task<IActionResult> CompleteExercise(int exerciseId,  [FromBody]GetNextExerciseBody body)
+        {
+            try
+            {
+                if (exerciseId == 0)
+                    return new ApiResponse("Missing exerciseId query parameter, should be id of exercise", HttpStatusCode.BadRequest);
+
+                DatabaseManager database = new DatabaseManager(UserHelper.GetClaims(User).GetUserId());
+
+                await database.SetExerciseCompleted(exerciseId);
+                
+                if(body != null && body.Valid)
+                {
+                    List<Difficulty> difficultyList = new List<Difficulty>();
+                    if (body.IncludeEasy) difficultyList.Add(Difficulty.Easy);
+                    if (body.IncludeMedium) difficultyList.Add(Difficulty.Medium);
+                    if (body.IncludeHard) difficultyList.Add(Difficulty.Hard);
+
+                    return new ApiResponse(await database.GetExerciseForUserAsync(difficultyList.ToArray(), body.CourseId));
+                }
+
+                return new ApiResponse();
             }
             catch (ApiException exception)
             {

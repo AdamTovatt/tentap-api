@@ -233,6 +233,25 @@ namespace TentaPApi.Managers
             return result;
         }
 
+        public async Task SetExerciseCompleted(int exerciseId)
+        {
+            if (UserId == 0)
+                throw new ApiException("Missing user information when setting exercise completed", System.Net.HttpStatusCode.BadRequest);
+
+            const string query = "INSERT INTO user_completed_exercise (user_id, exercise_id) VALUES (@user_id, @exercise_id) ON CONFLICT DO NOTHING";
+
+            using (NpgsqlConnection connection = new NpgsqlConnection(ConnectionString))
+            using (NpgsqlCommand command = new NpgsqlCommand(query, connection))
+            {
+                await connection.OpenAsync();
+
+                command.Parameters.Add("@user_id", NpgsqlDbType.Integer).Value = UserId;
+                command.Parameters.Add("@exercise_id", NpgsqlDbType.Integer).Value = exerciseId;
+
+                await command.ExecuteNonQueryAsync();
+            }
+        }
+
         public async Task<Course> GetCourseAsync(int id)
         {
             const string query = "SELECT id, code, active, name FROM course WHERE id = @id";
