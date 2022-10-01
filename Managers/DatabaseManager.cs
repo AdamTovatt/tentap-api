@@ -520,6 +520,7 @@ namespace TentaPApi.Managers
 
             string query = @"SELECT
 	                                    e.id,
+                                        false as completed,
                                         e.active,
 	                                    e.module_id,
 	                                    e.problem_image,

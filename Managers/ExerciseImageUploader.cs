@@ -46,8 +46,8 @@ namespace TentaPApi.Managers
                 solutionImage.File = new FileDescription(string.Format("s{0}", SolutionUuid), solutionStream);
                 ImageUploadResult solutionUploadResult = await cloudinary.UploadAsync(solutionImage);
 
-                ProblemImage = new CloudinaryImage() { Url = solutionUploadResult.Url.ToString() };
-                SolutionImage = new CloudinaryImage() { Url = questionUploadResult.Url.ToString() };
+                ProblemImage = new CloudinaryImage(solutionUploadResult.SecureUrl.ToString());
+                SolutionImage = new CloudinaryImage(questionUploadResult.SecureUrl.ToString());
 
                 return true;
             }

@@ -9,12 +9,18 @@ namespace TentaPApi.Models
     public class CloudinaryImage
     {
         [JsonProperty("url")]
-        public string Url { get { return url; } set { url = value.Replace("http://", "https://"); } }
-        private string url;
+        public string Url { get; set; }
         
         [JsonProperty("id")]
         public string Id { get { if (_id == null) GenerateId(); return _id; } }
         private string _id;
+
+        public CloudinaryImage() { }
+
+        public CloudinaryImage(string url)
+        {
+            Url = url;
+        }
 
         private void GenerateId()
         {

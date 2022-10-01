@@ -15,7 +15,7 @@ namespace TentaPApi.Models
 
         [JsonProperty("medium")]
         public DifficultyCompletionInfo Medium { get; set; }
-        
+
         [JsonProperty("hard")]
         public DifficultyCompletionInfo Hard { get; set; }
 
@@ -23,25 +23,23 @@ namespace TentaPApi.Models
         {
             Dictionary<int, DifficultyCompletionInfo> completionInfos = new Dictionary<int, DifficultyCompletionInfo>();
 
-            while(await reader.ReadAsync())
+            while (await reader.ReadAsync())
             {
                 completionInfos.Add((int)reader["difficulty"], new DifficultyCompletionInfo() { Completed = (int)(long)reader["completed_count"], Total = (int)(long)reader["total_count"] });
             }
 
-            if (completionInfos.ContainsKey(1) && completionInfos.ContainsKey(2) && completionInfos.ContainsKey(3))
+            for (int i = 1; i < 4; i++)
             {
-                return new CourseCompletionInfo()
-                {
-                    Easy = completionInfos[1],
-                    Medium = completionInfos[2],
-                    Hard = completionInfos[3],
-                };
+                if (!completionInfos.ContainsKey(i))
+                    completionInfos.Add(i, new DifficultyCompletionInfo());
             }
 
-            if (completionInfos.Count == 0)
-                return new CourseCompletionInfo() { Easy = new DifficultyCompletionInfo(), Medium = new DifficultyCompletionInfo(), Hard = new DifficultyCompletionInfo() };
-
-            throw new ApiException("Error when getting course completion info", System.Net.HttpStatusCode.InternalServerError);
+            return new CourseCompletionInfo()
+            {
+                Easy = completionInfos[1],
+                Medium = completionInfos[2],
+                Hard = completionInfos[3],
+            };
         }
     }
 }
