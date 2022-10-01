@@ -38,6 +38,9 @@ namespace TentaPApi.Models
                 };
             }
 
+            if (completionInfos.Count == 0)
+                return new CourseCompletionInfo() { Easy = new DifficultyCompletionInfo(), Medium = new DifficultyCompletionInfo(), Hard = new DifficultyCompletionInfo() };
+
             throw new ApiException("Error when getting course completion info", System.Net.HttpStatusCode.InternalServerError);
         }
     }
