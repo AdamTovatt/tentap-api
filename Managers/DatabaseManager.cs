@@ -4,6 +4,7 @@ using Sakur.WebApiUtilities.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using TentaPApi.Data;
 using TentaPApi.Helpers;
@@ -252,6 +253,25 @@ namespace TentaPApi.Managers
             }
         }
 
+        public async Task SetExerciseNotCompleted(int exerciseId)
+        {
+            if (UserId == 0)
+                throw new ApiException("Missing user information when setting exercise completed", System.Net.HttpStatusCode.BadRequest);
+
+            const string query = "DELETE FROM user_completed_exercise WHERE user_id = @user_id AND exercise_id = @exercise_id";
+
+            using (NpgsqlConnection connection = new NpgsqlConnection(ConnectionString))
+            using (NpgsqlCommand command = new NpgsqlCommand(query, connection))
+            {
+                await connection.OpenAsync();
+
+                command.Parameters.Add("@user_id", NpgsqlDbType.Integer).Value = UserId;
+                command.Parameters.Add("@exercise_id", NpgsqlDbType.Integer).Value = exerciseId;
+
+                await command.ExecuteNonQueryAsync();
+            }
+        }
+
         public async Task<Course> GetCourseAsync(int id)
         {
             const string query = "SELECT id, code, active, name FROM course WHERE id = @id";
@@ -375,6 +395,7 @@ namespace TentaPApi.Managers
         {
             const string query = @"SELECT
 	                                    e.id,
+	                                    CASE WHEN uce.exercise_id IS NULL THEN false ELSE true END AS completed,
                                         e.active,
 	                                    e.difficulty,
 	                                    e.module_id,
@@ -392,6 +413,8 @@ namespace TentaPApi.Managers
                                         source s ON e.source_id = s.id
                                     JOIN
                                         course_module m ON e.module_id = m.id
+                                    LEFT JOIN
+                                    	user_completed_exercise uce ON uce.user_id = @user_id AND uce.exercise_id = @id
                                     WHERE e.id = @id";
 
             using (NpgsqlConnection connection = new NpgsqlConnection(ConnectionString))
@@ -400,6 +423,7 @@ namespace TentaPApi.Managers
                 await connection.OpenAsync();
 
                 command.Parameters.Add("@id", NpgsqlDbType.Integer).Value = id;
+                command.Parameters.Add("@user_id", NpgsqlDbType.Integer).Value = UserId;
 
                 using (NpgsqlDataReader reader = await command.ExecuteReaderAsync())
                 {
@@ -548,12 +572,66 @@ namespace TentaPApi.Managers
             return exercises;
         }
 
+        public async Task<CourseCompletionInfo> GetCourseCompletionInfoAsync(int courseId)
+        {
+            if(UserId == 0)
+                throw new ApiException("Can not get completion info without user information, a bearer token needs to be provided", HttpStatusCode.BadRequest);
+
+            const string query = @"SELECT
+	                                    q1.difficulty,
+	                                    CASE WHEN q2.completed_count IS NULL THEN 0 ELSE q2.completed_count END,
+	                                    q1.total_count
+                                    FROM
+                                    (SELECT
+	                                    e.difficulty,
+	                                    COUNT(e.id) AS total_count
+                                    FROM
+	                                    exercise e
+                                    JOIN
+	                                    source s ON e.source_id = s.id
+                                    WHERE
+	                                    s.course_id = @course_id
+                                    GROUP BY
+	                                    e.difficulty) q1
+                                    LEFT JOIN
+                                    (SELECT
+	                                    e.difficulty,
+	                                    COUNT(e.id) AS completed_count
+                                    FROM
+	                                    exercise e
+                                    JOIN
+	                                    source s ON e.source_id = s.id
+                                    LEFT JOIN
+	                                    user_completed_exercise uce on e.id = uce.exercise_id
+                                    WHERE
+	                                    s.course_id = @course_id AND
+	                                    uce.user_id = @user_id
+                                    GROUP BY
+	                                    e.difficulty) q2
+                                    ON q1.difficulty = q2.difficulty";
+
+            using (NpgsqlConnection connection = new NpgsqlConnection(ConnectionString))
+            using (NpgsqlCommand command = new NpgsqlCommand(query, connection))
+            {
+                await connection.OpenAsync();
+
+                command.Parameters.Add("@user_id", NpgsqlDbType.Integer).Value = UserId;
+                command.Parameters.Add("@course_id", NpgsqlDbType.Integer).Value = courseId;
+
+                using (NpgsqlDataReader reader = await command.ExecuteReaderAsync())
+                {
+                    return await CourseCompletionInfo.FromReaderAsync(reader);
+                }
+            }
+        }
+
         public async Task<Exercise> GetExerciseForUserAsync(Difficulty[] difficulties, int courseId)
         {
             List<Exercise> exercises = new List<Exercise>();
 
             const string query = @"SELECT
 	                                    e.id,
+                                        false AS completed,
                                         e.active,
 	                                    e.module_id,
 	                                    e.problem_image,

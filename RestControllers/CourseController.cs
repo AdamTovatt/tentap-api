@@ -161,8 +161,27 @@ namespace TentaPApi.RestControllers
         }
 
         [Authorize]
+        [HttpGet("getCompletionInfo")]
+        public async Task<IActionResult> CompleteExercise(int courseId)
+        {
+            try
+            {
+                if (courseId == 0)
+                    return new ApiResponse("Missing courseId parameter in query parameters, should be int > 0", HttpStatusCode.BadRequest);
+
+                DatabaseManager database = new DatabaseManager(UserHelper.GetClaims(User).GetUserId());
+
+                return new ApiResponse(await database.GetCourseCompletionInfoAsync(courseId));
+            }
+            catch (ApiException exception)
+            {
+                return new ApiResponse(exception);
+            }
+        }
+
+        [Authorize]
         [HttpPost("exercise/setCompleted")]
-        public async Task<IActionResult> CompleteExercise(int exerciseId,  [FromBody]GetNextExerciseBody body)
+        public async Task<IActionResult> CompleteExercise(int exerciseId, [FromBody] GetNextExerciseBody body)
         {
             try
             {
@@ -172,8 +191,8 @@ namespace TentaPApi.RestControllers
                 DatabaseManager database = new DatabaseManager(UserHelper.GetClaims(User).GetUserId());
 
                 await database.SetExerciseCompleted(exerciseId);
-                
-                if(body != null && body.Valid)
+
+                if (body != null && body.Valid)
                 {
                     List<Difficulty> difficultyList = new List<Difficulty>();
                     if (body.IncludeEasy) difficultyList.Add(Difficulty.Easy);
@@ -182,6 +201,27 @@ namespace TentaPApi.RestControllers
 
                     return new ApiResponse(await database.GetExerciseForUserAsync(difficultyList.ToArray(), body.CourseId));
                 }
+
+                return new ApiResponse();
+            }
+            catch (ApiException exception)
+            {
+                return new ApiResponse(exception);
+            }
+        }
+
+        [Authorize]
+        [HttpPost("exercise/setNotCompleted")]
+        public async Task<IActionResult> UnCompleteExercise(int exerciseId)
+        {
+            try
+            {
+                if (exerciseId == 0)
+                    return new ApiResponse("Missing exerciseId query parameter, should be id of exercise", HttpStatusCode.BadRequest);
+
+                DatabaseManager database = new DatabaseManager(UserHelper.GetClaims(User).GetUserId());
+
+                await database.SetExerciseNotCompleted(exerciseId);
 
                 return new ApiResponse();
             }
