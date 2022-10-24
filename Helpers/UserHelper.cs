@@ -19,8 +19,10 @@ namespace TentaPApi.Helpers
             return null;
         }
 
-        public static string GenerateJsonWebToken(User user)
+        public static TokenResponse GenerateJsonWebToken(User user)
         {
+            DateTime expirationDate = DateTime.Now.AddDays(14);
+
             SymmetricSecurityKey securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(EnvironmentHelper.GetEnvironmentVariable("JWT_KEY")));
             SigningCredentials credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
@@ -32,9 +34,9 @@ namespace TentaPApi.Helpers
                 new Claim(ClaimTypes.Role, user.Role)
             };
 
-            JwtSecurityToken token = new JwtSecurityToken("sakur.se", "sakur.se", claims, expires: DateTime.Now.AddDays(14), signingCredentials: credentials);
+            JwtSecurityToken token = new JwtSecurityToken("sakur.se", "sakur.se", claims, expires: expirationDate, signingCredentials: credentials);
 
-            return new JwtSecurityTokenHandler().WriteToken(token);
+            return new TokenResponse(new JwtSecurityTokenHandler().WriteToken(token), user, expirationDate);
         }
 
         public static Dictionary<string, string> GetClaims(ClaimsPrincipal user)

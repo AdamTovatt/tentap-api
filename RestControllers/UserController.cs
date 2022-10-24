@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Sakur.WebApiUtilities.Models;
+using System;
 using System.Net;
 using System.Threading.Tasks;
 using TentaPApi.Helpers;
@@ -37,8 +38,7 @@ namespace TentaPApi.RestControllers
 
                 if (authenticatedUser != null)
                 {
-                    var tokenString = UserHelper.GenerateJsonWebToken(user);
-                    return new ApiResponse(new TokenResponse(tokenString, user) { Role = user.Role });
+                    return new ApiResponse(UserHelper.GenerateJsonWebToken(user));
                 }
 
                 return new ApiResponse(user, HttpStatusCode.InternalServerError);
@@ -68,8 +68,7 @@ namespace TentaPApi.RestControllers
 
                 if (authenticatedUser != null)
                 {
-                    var tokenString = UserHelper.GenerateJsonWebToken(user);
-                    return new ApiResponse(new TokenResponse(tokenString, user) { Role = user.Role });
+                    return new ApiResponse(UserHelper.GenerateJsonWebToken(user));
                 }
 
                 return new ApiResponse("Invalid username and/or password", HttpStatusCode.Unauthorized);
