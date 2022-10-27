@@ -234,12 +234,16 @@ namespace TentaPApi.Managers
             return result;
         }
 
-        public async Task SetExerciseCompleted(int exerciseId)
+        public async Task SetExerciseCompleted(int exerciseId, int perceivedDifficulty)
         {
             if (UserId == 0)
                 throw new ApiException("Missing user information when setting exercise completed", System.Net.HttpStatusCode.BadRequest);
 
-            const string query = "INSERT INTO user_completed_exercise (user_id, exercise_id) VALUES (@user_id, @exercise_id) ON CONFLICT DO NOTHING";
+            const string query = @"INSERT INTO user_completed_exercise (user_id, exercise_id, perceived_difficulty, completed_time)
+                                   VALUES (@user_id, @exercise_id, @perceived_difficulty, NOW())
+                                   ON CONFLICT(user_id, exercise_id) DO
+                                   UPDATE SET perceived_difficulty = @perceived_difficulty, completed_time = NOW()
+                                   WHERE user_completed_exercise.user_id = @user_id AND user_completed_exercise.exercise_id = @exercise_id";
 
             using (NpgsqlConnection connection = new NpgsqlConnection(ConnectionString))
             using (NpgsqlCommand command = new NpgsqlCommand(query, connection))
@@ -248,6 +252,7 @@ namespace TentaPApi.Managers
 
                 command.Parameters.Add("@user_id", NpgsqlDbType.Integer).Value = UserId;
                 command.Parameters.Add("@exercise_id", NpgsqlDbType.Integer).Value = exerciseId;
+                command.Parameters.Add("@perceived_difficulty", NpgsqlDbType.Integer).Value = perceivedDifficulty;
 
                 await command.ExecuteNonQueryAsync();
             }
@@ -626,13 +631,16 @@ namespace TentaPApi.Managers
             }
         }
 
-        public async Task<Exercise> GetExerciseForUserAsync(Difficulty[] difficulties, int courseId)
+        public async Task<Exercise> GetExerciseForUserAsync(Difficulty[] difficulties, int courseId, List<int> moduleExcludeList)
         {
+            if (moduleExcludeList == null)
+                moduleExcludeList = new List<int>();
+
             List<Exercise> exercises = new List<Exercise>();
 
             const string query = @"SELECT
 	                                    e.id,
-                                        false AS completed,
+                                        CASE WHEN uce.completed_time IS NULL THEN false ELSE true END completed,
                                         e.active,
 	                                    e.module_id,
 	                                    e.problem_image,
@@ -643,19 +651,22 @@ namespace TentaPApi.Managers
 	                                    s.course_id,
 	                                    s.source_date,
 	                                    m.name,
-	                                    m.id ""module_id""
+	                                    uce.completed_time,
+                                        uce.perceived_difficulty
                                     FROM
                                         exercise e
                                     JOIN
                                         source s ON e.source_id = s.id
                                     JOIN
                                         course_module m ON e.module_id = m.id
+                                    LEFT JOIN
+	                                    user_completed_exercise uce ON uce.exercise_id = e.id
                                     WHERE
-                                        e.id NOT IN (SELECT uce.exercise_id FROM user_completed_exercise uce WHERE uce.user_id = @user_id) AND
                                         e.difficulty = ANY(@difficulties) AND
                                         m.course_id = @course_id AND
-                                        e.active = TRUE
-                                    ORDER BY s.source_date DESC
+                                        e.active = TRUE AND
+                                        NOT m.id = ANY(@module_exclusion_list)
+                                    ORDER BY COALESCE(uce.completed_time, '2000-01-01') ASC, s.source_date DESC
                                     LIMIT 10";
 
             using (NpgsqlConnection connection = new NpgsqlConnection(ConnectionString))
@@ -665,6 +676,7 @@ namespace TentaPApi.Managers
 
                 command.Parameters.Add("@user_id", NpgsqlDbType.Integer).Value = UserId;
                 command.Parameters.Add("@difficulties", NpgsqlDbType.Array | NpgsqlDbType.Integer).Value = difficulties.ToIntArray();
+                command.Parameters.Add("@module_exclusion_list", NpgsqlDbType.Array | NpgsqlDbType.Integer).Value = moduleExcludeList.ToArray();
                 command.Parameters.Add("@course_id", NpgsqlDbType.Integer).Value = courseId;
 
                 using (NpgsqlDataReader reader = await command.ExecuteReaderAsync())
@@ -679,7 +691,12 @@ namespace TentaPApi.Managers
             if (exercises.Count == 0)
                 return null;
 
-            return exercises.TakeRandom();
+            IEnumerable<Exercise> newExercises = exercises.Where(x => !x.Completed);
+
+            if (newExercises.Count() == 0)
+                return exercises.TakeRandom();
+            else
+                return newExercises.TakeRandom();
         }
     }
 }

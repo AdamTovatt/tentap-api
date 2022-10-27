@@ -21,6 +21,9 @@ namespace TentaPApi.RequestBodies
         [JsonProperty("includeHard")]
         public bool IncludeHard { get; set; }
 
+        [JsonProperty("excludeModules")]
+        public List<int> ExcludeModules { get; set; }
+
         public override bool Valid { get { return CourseId != 0 && (IncludeEasy || IncludeMedium || IncludeHard); } }
     }
 }
