@@ -14,15 +14,15 @@ namespace TentaPApi.RestControllers
     public class TamaPluggiController : ControllerBase
     {
         [AllowAnonymous]
-        [HttpGet("calendar")]
-        public async Task<IActionResult> GetCalendar()
+        [HttpGet("{id}/calendar")]
+        public async Task<IActionResult> GetCalendar(string id)
         {
             Calendar calendar = new Calendar();
 
             CalendarEvent calendarEvent = new CalendarEvent
             {
                 Summary = "Tamapluggi test event",
-                Description = "This is a test event for tamapluggi",
+                Description = "This is a test event for tamapluggi with id: " + id,
                 Start = new CalDateTime(2022, 11, 5, 12, 0, 0),
                 End = new CalDateTime(2022, 11, 5, 15, 0, 0)
             };
