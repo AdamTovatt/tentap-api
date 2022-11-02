@@ -23,8 +23,8 @@ namespace TentaPApi.RestControllers
             {
                 Summary = "Tamapluggi test event",
                 Description = "This is a test event for tamapluggi",
-                Start = new CalDateTime(2022, 3, 15, 12, 0, 0),
-                End = new CalDateTime(2021, 3, 15, 15, 0, 0)
+                Start = new CalDateTime(2022, 11, 5, 12, 0, 0),
+                End = new CalDateTime(2022, 11, 5, 15, 0, 0)
             };
 
             calendar.Events.Add(calendarEvent);
