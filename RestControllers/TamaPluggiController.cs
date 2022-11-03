@@ -4,8 +4,12 @@ using Ical.Net.DataTypes;
 using Ical.Net.Serialization;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Sakur.WebApiUtilities.Models;
 using System.Text;
 using System.Threading.Tasks;
+using TentaPApi.Helpers;
+using TentaPApi.Managers;
+using TentaPApi.RequestBodies;
 
 namespace TentaPApi.RestControllers
 {
@@ -33,6 +37,25 @@ namespace TentaPApi.RestControllers
             string result = iCalSerializer.SerializeToString(calendar);
 
             return File(Encoding.ASCII.GetBytes(result), "text/calendar", "calendar.ics");
+        }
+
+        [Authorize]
+        [HttpPost("createNew")]
+        public async Task<IActionResult> CreateNew([FromBody] CreateTamapluggiBody body)
+        {
+            try
+            {
+                if (!body.Valid)
+                    return new ApiResponse(body.GetInvalidBodyMessage(), System.Net.HttpStatusCode.BadRequest);
+
+                DatabaseManager database = new DatabaseManager(UserHelper.GetClaims(User).GetUserId());
+
+                return new ApiResponse(new { createdId = await database.CreateTamapluggiAsync(body.Name, body.StudyGoal, body.BreakDuration) }, System.Net.HttpStatusCode.OK);
+            }
+            catch(ApiException exception)
+            {
+                return new ApiResponse(exception);
+            }
         }
     }
 }

@@ -698,5 +698,28 @@ namespace TentaPApi.Managers
             else
                 return newExercises.TakeRandom();
         }
+
+        public async Task<Guid> CreateTamapluggiAsync(string name, int studyGoal, int breakDuration)
+        {
+            if (UserId == 0)
+                throw new ApiException("No user!", HttpStatusCode.Unauthorized);
+
+            const string query = "INSERT INTO tamapluggi (name, user_id, study_goal, break_duration) VALUES (@name, @user_id, @study_goal, @break_duration) RETURNING id";
+
+            using (NpgsqlConnection connection = new NpgsqlConnection(ConnectionString))
+            using (NpgsqlCommand command = new NpgsqlCommand(query, connection))
+            {
+                await connection.OpenAsync();
+
+                command.Parameters.Add("@user_id", NpgsqlDbType.Integer).Value = UserId;
+                command.Parameters.Add("@name", NpgsqlDbType.Varchar).Value = name;
+                command.Parameters.Add("@study_goal", NpgsqlDbType.Integer).Value = studyGoal;
+                command.Parameters.Add("@break_duration", NpgsqlDbType.Integer).Value = breakDuration;
+
+                Guid id = (Guid)(await command.ExecuteScalarAsync());
+
+                return id;
+            }
+        }
     }
 }
