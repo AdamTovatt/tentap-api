@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 using TentaPApi.Data;
 using TentaPApi.Helpers;
 using TentaPApi.Models;
@@ -697,6 +698,30 @@ namespace TentaPApi.Managers
                 return exercises.TakeRandom();
             else
                 return newExercises.TakeRandom();
+        }
+
+        public async Task<Tamapluggi> GetTamapluggiForUserAsync()
+        {
+            if (UserId == 0)
+                throw new ApiException("No user!", HttpStatusCode.Unauthorized);
+
+            const string query = "SELECT * FROM tamapluggi WHERE user_id = @user_id";
+
+            using (NpgsqlConnection connection = new NpgsqlConnection(ConnectionString))
+            using (NpgsqlCommand command = new NpgsqlCommand(query, connection))
+            {
+                await connection.OpenAsync();
+
+                command.Parameters.Add("@user_id", NpgsqlDbType.Integer).Value = UserId;
+
+                using (NpgsqlDataReader reader = await command.ExecuteReaderAsync())
+                {
+                    while (await reader.ReadAsync())
+                        return Tamapluggi.FromReader(reader);
+                }
+            }
+
+            return null;
         }
 
         public async Task<Guid> CreateTamapluggiAsync(string name, int studyGoal, int breakDuration)

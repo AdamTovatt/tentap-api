@@ -50,7 +50,26 @@ namespace TentaPApi.RestControllers
 
                 DatabaseManager database = new DatabaseManager(UserHelper.GetClaims(User).GetUserId());
 
+                if (await database.GetTamapluggiForUserAsync() != null)
+                    return new ApiResponse("Tamapluggi already exists for user!", System.Net.HttpStatusCode.BadRequest);
+
                 return new ApiResponse(new { createdId = await database.CreateTamapluggiAsync(body.Name, body.StudyGoal, body.BreakDuration) }, System.Net.HttpStatusCode.OK);
+            }
+            catch(ApiException exception)
+            {
+                return new ApiResponse(exception);
+            }
+        }
+
+        [Authorize]
+        [HttpGet("fromUser")]
+        public async Task<IActionResult> GetForUser()
+        {
+            try
+            {
+                DatabaseManager database = new DatabaseManager(UserHelper.GetClaims(User).GetUserId());
+
+                return new ApiResponse(await database.GetTamapluggiForUserAsync(), System.Net.HttpStatusCode.OK);
             }
             catch(ApiException exception)
             {
